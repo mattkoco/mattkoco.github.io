@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kocorowski || E&S Capstone</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            overflow: hidden;
+            animation: fadeIn 3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+
+        .container {
+            text-align: center;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 3em;
+            font-weight: 300;
+            margin: 0;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            color: white;
+            background-color: black;
+            opacity: 0.6;
+            border: 2px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        button:hover {
+            background-color: white;
+            color: black;
+            opacity: 1;
+        }
+
+        .background-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: brightness(25%) grayscale(100%);
+            opacity: 0;
+            transition: opacity 3s ease-in-out;
+        }
+
+        .background-container.active {
+            opacity: 1;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+        <h1>Evil and Suffering in War</h1>
+        <button onclick="window.location.href='1.html'">Begin</button>
+    </div>
+
+    <audio id="background-music" autoplay loop>
+        <source src="landingmusic.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        window.addEventListener('load', () => {
+            // Background music settings
+            const audio = document.getElementById("background-music");
+            audio.muted = false;
+            audio.volume = 0.5;
+            audio.play().catch(error => {
+                console.log('Autoplay was prevented. Please allow audio in your browser settings:', error);
+            });
+
+            // Background cycling
+            const images = [
+                "ukraine.jpg",
+                "gaza.jpg",
+                "desertstorm.jpg",
+                "auschwitz.jpg"
+            ];
+            let currentIndex = 0;
+            let visibleContainer = 0;
+
+            // Create two background containers
+            const bgContainers = [];
+            for (let i = 0; i < 2; i++) {
+                const bgContainer = document.createElement('div');
+                bgContainer.classList.add('background-container');
+                document.body.appendChild(bgContainer);
+                bgContainers.push(bgContainer);
+            }
+
+            // Initialize the first background
+            bgContainers[visibleContainer].style.backgroundImage = `url('${images[currentIndex]}')`;
+            bgContainers[visibleContainer].classList.add('active');
+
+            // Function to update background images with crossfade
+            const updateBackground = () => {
+                // Prepare the next container
+                const nextContainer = 1 - visibleContainer;
+                currentIndex = (currentIndex + 1) % images.length;
+                bgContainers[nextContainer].style.backgroundImage = `url('${images[currentIndex]}')`;
+
+                // Start the crossfade
+                bgContainers[nextContainer].classList.add('active');
+                bgContainers[visibleContainer].classList.remove('active');
+
+                // Update the visible container index
+                visibleContainer = nextContainer;
+            };
+
+            setInterval(updateBackground, 7000); // Change background every 7 seconds
+        });
+    </script>
+</body>
+</html>
