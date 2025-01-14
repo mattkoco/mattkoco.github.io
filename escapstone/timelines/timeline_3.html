@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History of the War</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
+        /* General body styling */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background-color: #888888;
+            font-family: Arial, sans-serif;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-family: Roboto, sans-serif
+        }
+
+        /* Container for wave effect */
+        .wave-container {
+            height: 100%;
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5%;
+            box-sizing: border-box;
+        }
+
+        /* Wave effect styling */
+        .wave-container::before, .wave-container::after {
+            content: "";
+            width: 100%;
+            height: 99px;
+            position: absolute;
+            left: 0;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center top;
+            background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1200 127' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M0 93L50 87C100 82 200 70 300 47C400 25 500 -10 600 2C700 13 800 70 900 93C1000 116 1100 104 1150 99L1200 93V127H1150C1100 127 1000 127 900 127C800 127 700 127 600 127C500 127 400 127 300 127C200 127 100 127 50 127H0V93Z' fill='%23303030'/></svg>");
+        }
+
+        .wave-container::before {
+            bottom: 0;
+        }
+
+        .wave-container::after {
+            top: 0;
+            transform: rotate(180deg);
+        }
+
+        /* Content inside wave container */
+        .wave-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            height: 80%;
+        }
+
+        .wave-content .left {
+            flex: 1;
+            padding-right: 20px;
+            font-size: 2rem;
+            text-align: left;
+        }
+
+        .wave-content .right {
+            flex: 2;
+            padding-left: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Timeline styling */
+        .timeline {
+            position: relative;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 4px; /* Adjusted thickness of timeline */
+            background-color: white;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .container {
+            padding: 10px 20px; /* Adjusted padding for compactness */
+            position: relative;
+            background-color: inherit;
+            width: 45%; /* Reduced width for better alignment */
+        }
+
+        .container.left {
+            left: 5%; /* Adjusted position of left container */
+            text-align: right;
+        }
+
+        .container.right {
+            left: 52%; /* Slightly adjusted right container */
+            text-align: left;
+        }
+
+        .container::after {
+            content: '';
+            position: absolute;
+            width: 15px; /* Reduced size of circle */
+            height: 15px;
+            right: -8px; /* Adjusted positioning */
+            background-color: white;
+            border: 4px solid #FF9F55;
+            top: 15px;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .left::before {
+            content: "";
+            height: 0;
+            position: absolute;
+            top: 22px;
+            width: 0;
+            z-index: 1;
+            right: -10px; /* Adjusted arrow size and position */
+            border: medium solid white;
+            border-width: 7px 0 7px 7px;
+            border-color: transparent transparent transparent white;
+        }
+
+        .right::before {
+            content: "";
+            height: 0;
+            position: absolute;
+            top: 22px;
+            width: 0;
+            z-index: 1;
+            left: -10px; /* Adjusted arrow size and position */
+            border: medium solid white;
+            border-width: 7px 7px 7px 0;
+            border-color: transparent white transparent transparent;
+        }
+
+        .right::after {
+            left: -10px;
+        }
+
+        .content {
+            padding: 15px 25px; /* Adjusted padding inside content */
+            background-color: white;
+            position: relative;
+            border-radius: 6px;
+            color: #333;
+        }
+
+        /* Responsive styling for smaller screens */
+        @media(max-width: 850px) {
+            .wave-container::before, .wave-container::after {
+                height: 49.5px;
+            }
+
+            .wave-content {
+                flex-direction: column;
+            }
+
+            .wave-content .left, .wave-content .right {
+                padding: 10px;
+                border-left: none;
+            }
+        }
+
+        @media screen and (max-width: 600px) {
+            .timeline::after {
+                left: 30px;
+            }
+
+            .container {
+                width: 100%;
+                padding-left: 60px;
+                padding-right: 25px;
+            }
+
+            .container::before {
+                left: 50px;
+                border: medium solid white;
+                border-width: 7px 7px 7px 0;
+                border-color: transparent white transparent transparent;
+            }
+
+            .left::after, .right::after {
+                left: 15px;
+            }
+
+            .right {
+                left: 0%;
+            }
+        }
+
+        /* Styling for the next button */
+        .nextButton {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #999999;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            
+        }
+
+        .nextButton:hover {
+            background-color: #2f2f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="wave-container">
+        <div class="wave-content">
+            <div class="left">
+                Timeline of the Russia Ukraine War
+                <div style="text-align: left; margin-top: 20px;">
+                    <a class="nextButton" href="mattkoco.github.io/escapstone/timelines/timeline_4.html" target="_blank">
+                        Next
+                    </a>
+                </div>
+            </div>
+            <div class="right" style="font-size: 40px;">
+                November 2013 <br/>
+                
+                Ukrainian President Viktor Yanukovych rejects an economic deal with the EU, opting for a $15 billion Russian counteroffer. This decision sparks widespread protests, known as the Euromaidan, against corruption and the pro-Russian government​.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
