@@ -1,206 +1,596 @@
 <!DOCTYPE html>
 <html lang="en">
-</body>
-</html>
-  <title>🇵🇱 K{CTF} 🇺🇲</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matthew Kocorowski</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --secondary: #27ae60;
+            --dark: #121212;
+            --darker: #0a0a0a;
+            --light: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ubuntu Mono', monospace;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            opacity: 0.1;
+            z-index: -1;
+            animation: gradientFlow 15s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientText 8s ease infinite;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .hero h1::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.8),
+                transparent
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textWave 8s ease infinite;
+            animation-delay: 2s;
+        }
+
+        .hero h1:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+ 
+        .achievements {
+            padding: 100px 0;
+        }
+
+        .achievement-card {
+            background: var(--darker);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(46, 204, 113, 0.1);
+        }
+
+        .achievement-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(46, 204, 113, 0.3);
+        }
+
+        .achievement-card h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .achievements h2 {
+            text-align: center;
+            margin-bottom: 50px;
+            color: var(--primary);
+            transition: all 0.3s ease;
+            cursor: default;
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .achievements h2 span {
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .achievements h2:hover span {
+            text-shadow: 0 0 10px var(--primary),
+                         0 0 20px rgba(46, 204, 113, 0.5);
+            transform: scale(1.1);
+        }
+
+        .achievements h2 span:nth-child(1) { transition-delay: 0.0s; }
+        .achievements h2 span:nth-child(2) { transition-delay: 0.05s; }
+        .achievements h2 span:nth-child(3) { transition-delay: 0.1s; }
+        .achievements h2 span:nth-child(4) { transition-delay: 0.15s; }
+        .achievements h2 span:nth-child(5) { transition-delay: 0.2s; }
+        .achievements h2 span:nth-child(6) { transition-delay: 0.25s; }
+        .achievements h2 span:nth-child(7) { transition-delay: 0.3s; }
+        .achievements h2 span:nth-child(8) { transition-delay: 0.35s; }
+        .achievements h2 span:nth-child(9) { transition-delay: 0.4s; }
+        .achievements h2 span:nth-child(10) { transition-delay: 0.45s; }
+        .achievements h2 span:nth-child(11) { transition-delay: 0.5s; }
+        .achievements h2 span:nth-child(12) { transition-delay: 0.55s; }
+        .achievements h2 span:nth-child(13) { transition-delay: 0.6s; }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes gradientText {
+            0% {
+                background-position: 0% 50%;
+                filter: brightness(1);
+            }
+            50% {
+                background-position: 100% 50%;
+                filter: brightness(1.2);
+            }
+            100% {
+                background-position: 0% 50%;
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes gradientFlow {
+            0% {
+                background-position: 0% 50%;
+                transform: scale(1);
+            }
+            50% {
+                background-position: 100% 50%;
+                transform: scale(1.1);
+            }
+            100% {
+                background-position: 0% 50%;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes textWave {
+            0% {
+                background-position: -200% center;
+            }
+            50% {
+                background-position: 200% center;
+            }
+            100% {
+                background-position: -200% center;
+            }
+        }
+
+        .hero h1 {
+            background-size: 200% auto;
+        }
+
+        .hero::before {
+            background-size: 200% 200%;
+        }
+
+        .hero h1::before {
+            background-size: 200% 100%;
+        }
+ 
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            .hero p {
+                font-size: 1.2rem;
+            }
+        }
+
+        .projects {
+            padding: 100px 0;
+            background: linear-gradient(180deg, var(--dark) 0%, var(--darker) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .projects::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(46, 204, 113, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(39, 174, 96, 0.1) 0%, transparent 50%);
+            animation: gradientFlow 20s ease infinite;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .project-card {
+            background: rgba(10, 10, 10, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(46, 204, 113, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(46, 204, 113, 0.3);
+            box-shadow: 0 10px 30px rgba(46, 204, 113, 0.1);
+        }
+
+        .project-card h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .project-card p {
+            color: var(--light);
+            opacity: 0.9;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .project-card .tech-stack {
+            margin-top: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tech-tag {
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--primary);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+ 
+        .gallery {
+            padding: 100px 0;
+            background: var(--dark);
+            position: relative;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 50px;
+        }
+
+        .gallery-item {
+            aspect-ratio: 1;
+            background: var(--darker);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(46, 204, 113, 0.1);
+            cursor: pointer;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.02);
+            border-color: rgba(46, 204, 113, 0.3);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.1);
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .gallery-item::before {
+            content: attr(data-title);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            color: white;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 2;
+        }
+
+        .gallery-item:hover::before {
+            transform: translateY(0);
+        }
+
+        .gallery-item::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+
+        .gallery-item:hover::after {
+            opacity: 0.1;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90vh;
+            text-align: center;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-title {
+            color: white;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--primary);
+        }
+    </style>
+    <script>
+        // Modal functionality
+        function openModal(imgSrc, title) {
+            const modal = document.querySelector('.modal-overlay');
+            const modalImg = modal.querySelector('img');
+            const modalTitle = modal.querySelector('.modal-title');
+            modalImg.src = imgSrc;
+            modalTitle.textContent = title;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.modal-overlay');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // add click handlers to gallery images
+            document.querySelectorAll('.gallery-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const imgSrc = this.querySelector('img').src;
+                    const title = this.getAttribute('data-title');
+                    openModal(imgSrc, title);
+                });
+            });
+
+            document.querySelector('.close-modal').addEventListener('click', closeModal);
+            document.querySelector('.modal-overlay').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
 </head>
 <body>
-  <header>
-    <div class="container">
-      <h1>🇵🇱 mattkoco@Koco{CTF}:~# 🇺🇲</h1>
+    <div class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <a href="https://github.com/mattkoco" target="_blank" style="text-decoration: none; color: inherit; display: inline-block;">
+                    <h1>Matthew Kocorowski</h1>
+                </a>
+                <p>High School Student | CTF Competitor | LBCSI Product Developer | Cyberpatriot National Finalist</p>
+            </div>
+        </div>
     </div>
-  </header>
-  <div class="container">
-    <section id="main_content">
-      <p>👋 Welcome to my writeups page. Hope you enjoy.</p>
-      <hr />
-      <h3 id="whoami">Whoami:~#</h3>
-      <hr />
-      <ul>
-        <li><strong>My Name:</strong> <code class="highlight-red">Matthew Kocorowski</code></li>
-        <li><strong>Github:</strong> <code class="highlight-red">https://github.com/mattkoco</code></li>
-        <li><strong>Contact:</strong> <code class="highlight-red">matthewkocorowski@gmail.com</code></li>
-      </ul>
 
-      <hr />
-      <h3 id="picoGym"><strong>picoGym:~#</strong></h3>
-      <hr />
-      <ul>
-        <li>[[October 03 2007]] <a href="https://github.com/mattkoco">test</a> <code class="highlight-red">test cat</code> <code class="highlight-red">test cat 2</code></li>
-      </ul>
-
-      <hr />
-      <h3 id="pico2024"><strong>pico2024:~#</strong></h3>
-      <hr />
-      <ul>
-        <li>[[March 12 2024]] <a href="https://github.com/mattkoco">test</a> <code class="highlight-red">test cat</code> <code class="highlight-red">test cat 2</code></li>
-        </ul>    
+    <section class="achievements">
+        <div class="container">
+            <h2><span>M</span><span>y</span><span> </span><span>A</span><span>c</span><span>h</span><span>i</span><span>e</span><span>v</span><span>e</span><span>m</span><span>e</span><span>n</span><span>t</span><span>s</span></h2>
+            <div class="achievement-card">
+                <h3>CTF Success</h3>
+                <p>Competed and excelled in multiple international and domestic Capture The Flag competitions, demonstrating advanced cybersecurity skills and problem-solving abilities.</p>
+            </div>
+            <div class="achievement-card">
+                <h3>Cyberpatriot Nationals</h3>
+                <p>Qualified for and competed in the prestigious Cyberpatriot National Finals, showcasing expertise in network security and system hardening. Team placed 5th overall, placing us in the very highest echelon of teams in the nation.</p>
+            </div>
+        </div>
     </section>
-  </div>
+
+    <section class="projects">
+        <div class="container">
+            <h2 class="text-center mb-12">
+                <span>P</span><span>r</span><span>o</span><span>j</span><span>e</span><span>c</span><span>t</span><span>s</span>
+            </h2>
+            <div class="project-grid">
+                <div class="project-card">
+                    <h3>LBC2 Challenge Developer 2024-2025</h3>
+                    <p>Helped lead the development of cybersecurity CTF challenges across multiple categories including Forensics, Reverse Engineering, Web Exploitation, and OSINT for a student-led CTF competition (Loyola Blakefield Cyber Challenge, or LBC2 for short). Created and tested challenges for both beginner and advanced divisions, ensuring appropriate difficulty scaling and educational value. Additionally contributed to OS challenge development, developing and testing challenges in both offensive and defensive security operations.</p>
+                    <div class="tech-stack">
+                        <span class="tech-tag">CTF Development</span>
+                        <span class="tech-tag">Security Testing</span>
+                        <span class="tech-tag">Teamwork and Leadership</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3>Kinesis Scorebot</h3>
+                    <p>A lightweight, terminal-based vulnerability scoring system for Linux systems, designed to facilitate Cyberpatriot-style practice environments. Written entirely in Bash, this user-friendly tool enables easy development and testing of find-and-fix vulnerability scenarios, helping teams prepare for cybersecurity competitions through realistic scoring and feedback mechanisms. <a href="https://github.com/mattkoco/Kinesis-Scorebot" target="_blank" style="color: var(--primary); text-decoration: none;">View on GitHub</a></p>
+                    <div class="tech-stack">
+                        <span class="tech-tag">Bash</span>
+                        <span class="tech-tag">Linux</span>
+                        <span class="tech-tag">System Security</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="gallery">
+        <div class="container">
+            <h2 class="text-center mb-12">
+                <span>G</span><span>a</span><span>l</span><span>l</span><span>e</span><span>r</span><span>y</span>
+            </h2>
+            <div class="gallery-grid">
+                <div class="gallery-item" data-title="LBC2 2024">
+                    <img src="image1.jpg" alt="LBC2 2024">
+                </div>
+                <div class="gallery-item" data-title="Cyberpatriot Nationals">
+                    <img src="image2.jpg" alt="Cyberpatriot Nationals">
+                </div>
+                <div class="gallery-item" data-title="RTARF Cyber Warrior CTF">
+                    <img src="image3.png" alt="RTARF Cyber Warrior CTF">
+                </div>
+                <div class="gallery-item" data-title="Cyberpatriot National Finals Banquet">
+                    <img src="image4.png" alt="Cyberpatriot National Finals Banquet">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <img src="" alt="">
+            <div class="modal-title"></div>
+        </div>
+    </div>
+
+    <script>
+        // scroll effect
+        window.addEventListener('scroll', () => {
+            const scroll = window.scrollY;
+            const hero = document.querySelector('.hero');
+            hero.style.backgroundPosition = `center ${scroll * 0.5}px`;
+        });
+
+        // scroll effect on cards
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        document.querySelectorAll('.achievement-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.5s ease-out';
+            observer.observe(card);
+        });
+    </script>
 </body>
 </html>
 
-<style>
-
-.highlight-red {
-  background: rgba(0, 0, 0, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 0px 3px;
-  margin: 0px -3px;
-  color: #e04a4a;
-  border-radius: 2px;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  background: #151515;
-  color: #eaeaea;
-  font-size: 16px;
-  line-height: 1.5;
-  font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
-}
-
-.container {
-  width: 90%;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-section {
-  display: block;
-  margin: 0 0 20px 0;
-}
-
-header {
-  background: rgba(0, 0, 0, 0.1);
-  width: 100%;
-  border-bottom: 1px solid #cf4848;
-  padding: 20px 0;
-  margin: 0 0 40px 0;
-}
-
-header h1 {
-  font-size: 30px;
-  line-height: 1.5;
-  margin: 0 0 0 -40px;
-  font-weight: bold;
-  font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
-  color: #e7dfdf;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 0 5px rgba(255, 0, 0, 0.342), 0 0 10px rgba(255, 11, 11, 0.425);
-  letter-spacing: -1px;
-  -webkit-font-smoothing: antialiased;
-}
-
-@media (max-width: 1000px) {
-  header h1 {
-    margin-left: 0;
-  }
-}
-
-header h2 {
-  font-size: 18px;
-  font-weight: 300;
-  color: #666;
-}
-
-#main_content {
-  width: 100%;
-  -webkit-font-smoothing: antialiased;
-}
-
-section img {
-  max-width: 100%;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: normal;
-  font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
-  color: #e7dfdf;
-  letter-spacing: -0.03em;
-  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.1), 0 0 5px rgba(231, 13, 13, 0.226), 0 0 10px rgba(235, 7, 7, 0.212);
-}
-
-#main_content h1 {
-  font-size: 30px;
-}
-
-#main_content h2 {
-  font-size: 24px;
-}
-
-#main_content h3 {
-  font-size: 18px;
-}
-
-#main_content h4 {
-  font-size: 14px;
-}
-
-#main_content h5 {
-  font-size: 12px;
-  text-transform: uppercase;
-  margin: 0 0 5px 0;
-}
-
-#main_content h6 {
-  font-size: 12px;
-  text-transform: uppercase;
-  color: #999;
-  margin: 0 0 5px 0;
-}
-
-/* KEY:
-dt = definition term 
-*/
-
-dt {
-  font-style: italic;
-  font-weight: bold;
-}
-
-blockquote {
-  color: #aaa;
-  padding-left: 10px;
-  border-left: 1px dotted #666;
-}
-
-table {
-  width: 100%;
-  margin: 0 0 20px 0;
-}
-
-/* KEY:
-th = table header
-td = table data
-hr = horizontal rule
-a = anchor (link) */
-
-th {
-  text-align: left;
-  border-bottom: 1px dashed #cf4848;
-  padding: 5px 10px;
-}
-
-td {
-  padding: 5px 10px;
-}
-
-hr {
-  height: 0;
-  border: 0;
-  border-bottom: 1px dashed #cf4848;
-  color: #cf4848;
-}
-
-a {
-  color: #63c0f5;
-  text-shadow: 0 0 5px rgba(104, 182, 255, 0.5);
-}
-
-  </style>
