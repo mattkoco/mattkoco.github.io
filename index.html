@@ -7,8 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2ecc71;
-            --secondary: #27ae60;
+            --primary: #FDB813; /* Gold from logo */
+            --secondary: #0D2A4B; /* Blue from logo */
+            --secondary-darker: #091c33;
             --dark: #121212;
             --darker: #0a0a0a;
             --light: #ffffff;
@@ -19,6 +20,10 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Ubuntu Mono', monospace;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
@@ -33,12 +38,53 @@
             padding: 0 20px;
         }
 
+        /* Navigation Bar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 0;
+            background: rgba(10, 10, 10, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(13, 42, 75, 0.5);
+            transition: all 0.3s ease;
+        }
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-size: 1.1rem;
+        }
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Hero Section */
         .hero {
             height: 100vh;
             display: flex;
             align-items: center;
             position: relative;
             overflow: hidden;
+            padding-top: 60px; /* Offset for nav bar */
         }
 
         .hero::before {
@@ -48,7 +94,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            background: linear-gradient(45deg, var(--secondary), var(--primary));
             opacity: 0.1;
             z-index: -1;
             animation: gradientFlow 15s ease infinite;
@@ -65,7 +111,7 @@
         .hero h1 {
             font-size: 4rem;
             margin-bottom: 1rem;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            background: linear-gradient(45deg, var(--primary), #d4a02a);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -76,38 +122,38 @@
             display: inline-block;
         }
 
-        .hero h1::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.8),
-                transparent
-            );
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: textWave 8s ease infinite;
-            animation-delay: 2s;
-        }
-
         .hero h1:hover {
             transform: scale(1.05);
-            text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+            text-shadow: 0 0 15px rgba(253, 184, 19, 0.5);
         }
 
         .hero p {
             font-size: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             opacity: 0.8;
         }
 
- 
+        .cta-button {
+            display: inline-block;
+            padding: 12px 28px;
+            background: var(--secondary);
+            color: var(--light);
+            border: 2px solid var(--secondary);
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        .cta-button:hover {
+            background: var(--primary);
+            color: var(--secondary);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(253, 184, 19, 0.3);
+        }
+
+        /* Achievements Section */
         .achievements {
             padding: 100px 0;
         }
@@ -117,13 +163,13 @@
             border-radius: 15px;
             padding: 30px;
             margin-bottom: 30px;
-            transition: transform 0.3s ease;
-            border: 1px solid rgba(46, 204, 113, 0.1);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            border: 1px solid rgba(13, 42, 75, 0.4);
         }
 
         .achievement-card:hover {
             transform: translateY(-10px);
-            border-color: rgba(46, 204, 113, 0.3);
+            border-color: rgba(253, 184, 19, 0.3);
         }
 
         .achievement-card h3 {
@@ -131,7 +177,7 @@
             margin-bottom: 15px;
         }
 
-        .achievements h2 {
+        .achievements h2, .projects h2, .gallery h2 {
             text-align: center;
             margin-bottom: 50px;
             color: var(--primary);
@@ -140,126 +186,65 @@
             display: flex;
             justify-content: center;
             gap: 5px;
+            font-size: 2.5rem;
         }
 
-        .achievements h2 span {
+        .achievements h2 span, .projects h2 span, .gallery h2 span {
             display: inline-block;
             transition: all 0.3s ease;
         }
 
-        .achievements h2:hover span {
+        .achievements h2:hover span, .projects h2:hover span, .gallery h2:hover span {
             text-shadow: 0 0 10px var(--primary),
-                         0 0 20px rgba(46, 204, 113, 0.5);
+                         0 0 20px rgba(253, 184, 19, 0.5);
             transform: scale(1.1);
         }
-
-        .achievements h2 span:nth-child(1) { transition-delay: 0.0s; }
-        .achievements h2 span:nth-child(2) { transition-delay: 0.05s; }
-        .achievements h2 span:nth-child(3) { transition-delay: 0.1s; }
-        .achievements h2 span:nth-child(4) { transition-delay: 0.15s; }
-        .achievements h2 span:nth-child(5) { transition-delay: 0.2s; }
-        .achievements h2 span:nth-child(6) { transition-delay: 0.25s; }
-        .achievements h2 span:nth-child(7) { transition-delay: 0.3s; }
-        .achievements h2 span:nth-child(8) { transition-delay: 0.35s; }
-        .achievements h2 span:nth-child(9) { transition-delay: 0.4s; }
-        .achievements h2 span:nth-child(10) { transition-delay: 0.45s; }
-        .achievements h2 span:nth-child(11) { transition-delay: 0.5s; }
-        .achievements h2 span:nth-child(12) { transition-delay: 0.55s; }
-        .achievements h2 span:nth-child(13) { transition-delay: 0.6s; }
+        
+        /* Staggered animation delays */
+        .staggered-letters span:nth-child(1) { transition-delay: 0.0s; }
+        .staggered-letters span:nth-child(2) { transition-delay: 0.05s; }
+        .staggered-letters span:nth-child(3) { transition-delay: 0.1s; }
+        .staggered-letters span:nth-child(4) { transition-delay: 0.15s; }
+        .staggered-letters span:nth-child(5) { transition-delay: 0.2s; }
+        .staggered-letters span:nth-child(6) { transition-delay: 0.25s; }
+        .staggered-letters span:nth-child(7) { transition-delay: 0.3s; }
+        .staggered-letters span:nth-child(8) { transition-delay: 0.35s; }
+        .staggered-letters span:nth-child(9) { transition-delay: 0.4s; }
+        .staggered-letters span:nth-child(10) { transition-delay: 0.45s; }
+        .staggered-letters span:nth-child(11) { transition-delay: 0.5s; }
+        .staggered-letters span:nth-child(12) { transition-delay: 0.55s; }
+        .staggered-letters span:nth-child(13) { transition-delay: 0.6s; }
 
         /* Animations */
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes gradientText {
-            0% {
-                background-position: 0% 50%;
-                filter: brightness(1);
-            }
-            50% {
-                background-position: 100% 50%;
-                filter: brightness(1.2);
-            }
-            100% {
-                background-position: 0% 50%;
-                filter: brightness(1);
-            }
+            0%, 100% { background-position: 0% 50%; filter: brightness(1); }
+            50% { background-position: 100% 50%; filter: brightness(1.2); }
         }
-
         @keyframes gradientFlow {
-            0% {
-                background-position: 0% 50%;
-                transform: scale(1);
-            }
-            50% {
-                background-position: 100% 50%;
-                transform: scale(1.1);
-            }
-            100% {
-                background-position: 0% 50%;
-                transform: scale(1);
-            }
+            0%, 100% { background-position: 0% 50%; transform: scale(1); }
+            50% { background-position: 100% 50%; transform: scale(1.1); }
         }
 
-        @keyframes textWave {
-            0% {
-                background-position: -200% center;
-            }
-            50% {
-                background-position: 200% center;
-            }
-            100% {
-                background-position: -200% center;
-            }
-        }
+        .hero h1 { background-size: 200% auto; }
+        .hero::before { background-size: 200% 200%; }
 
-        .hero h1 {
-            background-size: 200% auto;
-        }
-
-        .hero::before {
-            background-size: 200% 200%;
-        }
-
-        .hero h1::before {
-            background-size: 200% 100%;
-        }
- 
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-            .hero p {
-                font-size: 1.2rem;
-            }
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.2rem; }
+            .nav-links { display: none; } /* Hide nav links on mobile, can be replaced with a hamburger menu */
         }
 
+        /* Projects Section */
         .projects {
             padding: 100px 0;
-            background: linear-gradient(180deg, var(--dark) 0%, var(--darker) 100%);
+            background: linear-gradient(180deg, var(--dark) 0%, var(--secondary-darker) 100%);
             position: relative;
             overflow: hidden;
-        }
-
-        .projects::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(46, 204, 113, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(39, 174, 96, 0.1) 0%, transparent 50%);
-            animation: gradientFlow 20s ease infinite;
         }
 
         .project-grid {
@@ -274,7 +259,7 @@
             border-radius: 15px;
             padding: 30px;
             transition: all 0.3s ease;
-            border: 1px solid rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(13, 42, 75, 0.4);
             backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
@@ -283,8 +268,8 @@
 
         .project-card:hover {
             transform: translateY(-10px);
-            border-color: rgba(46, 204, 113, 0.3);
-            box-shadow: 0 10px 30px rgba(46, 204, 113, 0.1);
+            border-color: rgba(13, 42, 75, 0.6);
+            box-shadow: 0 10px 30px rgba(13, 42, 75, 0.2), 0 0 20px rgba(253, 184, 19, 0.1);
         }
 
         .project-card h3 {
@@ -299,22 +284,43 @@
             line-height: 1.6;
             margin-bottom: 20px;
         }
+        
+        a.project-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        a.project-link:hover {
+            text-decoration: underline;
+        }
 
         .project-card .tech-stack {
             margin-top: auto;
+            padding-top: 1rem;
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
         }
 
         .tech-tag {
-            background: rgba(46, 204, 113, 0.1);
+            background: var(--secondary);
             color: var(--primary);
             padding: 5px 15px;
             border-radius: 20px;
             font-size: 0.9rem;
+            border: 1px solid rgba(253, 184, 19, 0.5);
+            transition: all 0.3s ease;
         }
- 
+
+        .tech-tag:hover {
+            background: var(--primary);
+            color: var(--secondary);
+            border-color: var(--secondary);
+            transform: scale(1.05);
+        }
+
+        /* Gallery Section */
         .gallery {
             padding: 100px 0;
             background: var(--dark);
@@ -335,7 +341,7 @@
             overflow: hidden;
             position: relative;
             transition: all 0.3s ease;
-            border: 1px solid rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(13, 42, 75, 0.4);
             cursor: pointer;
         }
 
@@ -348,13 +354,11 @@
 
         .gallery-item:hover {
             transform: scale(1.02);
-            border-color: rgba(46, 204, 113, 0.3);
-            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.1);
+            border-color: rgba(253, 184, 19, 0.3);
+            box-shadow: 0 5px 15px rgba(253, 184, 19, 0.1);
         }
 
-        .gallery-item:hover img {
-            transform: scale(1.05);
-        }
+        .gallery-item:hover img { transform: scale(1.05); }
 
         .gallery-item::before {
             content: attr(data-title);
@@ -369,49 +373,26 @@
             transition: transform 0.3s ease;
             z-index: 2;
         }
+        .gallery-item:hover::before { transform: translateY(0); }
 
-        .gallery-item:hover::before {
-            transform: translateY(0);
-        }
-
-        .gallery-item::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1;
-        }
-
-        .gallery-item:hover::after {
-            opacity: 0.1;
-        }
-
+        /* Modal Styles */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.9);
             z-index: 1000;
             justify-content: center;
             align-items: center;
         }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
+        .modal-overlay.active { display: flex; }
         .modal-content {
             position: relative;
             max-width: 90%;
             max-height: 90vh;
             text-align: center;
         }
-
         .modal-content img {
             max-width: 100%;
             max-height: 80vh;
@@ -419,32 +400,173 @@
             border-radius: 10px;
             box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
         }
-
         .modal-title {
             color: white;
             margin-top: 20px;
             font-size: 1.2rem;
             opacity: 0.9;
         }
-
         .close-modal {
             position: absolute;
-            top: -40px;
-            right: 0;
+            top: -40px; right: 0;
             color: white;
             font-size: 30px;
             cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-            margin: 0;
+            background: none; border: none;
+            padding: 0; margin: 0;
             transition: color 0.3s ease;
         }
-
-        .close-modal:hover {
-            color: var(--primary);
+        .close-modal:hover { color: var(--primary); }
+        
+        /* Footer */
+        footer {
+            padding: 2rem 0;
+            text-align: center;
+            background: var(--darker);
+            border-top: 1px solid var(--secondary);
+            margin-top: 100px;
         }
+        footer p {
+            margin-bottom: 0.5rem;
+            opacity: 0.7;
+        }
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: text-decoration 0.3s ease;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+
     </style>
+</head>
+<body>
+
+    <nav>
+        <div class="container nav-container">
+            <a href="#" class="nav-logo">MK</a>
+            <ul class="nav-links">
+                <li><a href="#achievements">Achievements</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <a href="https://github.com/mattkoco" target="_blank" style="text-decoration: none; color: inherit; display: inline-block;">
+                    <h1>Matthew Kocorowski</h1>
+                </a>
+                <p>High School Student | CTF Competitor | LBCSI Product Developer | Cyberpatriot National Finalist</p>
+                <a href="#projects" class="cta-button">View My Work</a>
+            </div>
+        </div>
+    </div>
+
+    <section id="achievements" class="achievements">
+        <div class="container">
+            <h2 class="staggered-letters"><span>M</span><span>y</span><span> </span><span>A</span><span>c</span><span>h</span><span>i</span><span>e</span><span>v</span><span>e</span><span>m</span><span>e</span><span>n</span><span>t</span><span>s</span></h2>
+            <div class="achievement-card">
+                <h3>CTF Success</h3>
+                <p>Competed and excelled in multiple international and domestic Capture The Flag competitions, demonstrating advanced cybersecurity skills and problem-solving abilities. Notable placements include 3rd place at the RTARF Cyber Warrior Competition 2024, and 1st place at the RTARF Cyber Warrior Competition 2025.</p>
+            </div>
+            <div class="achievement-card">
+                <h3>Cyberpatriot Nationals</h3>
+                <p>Qualified for and competed in the prestigious Cyberpatriot National Finals, showcasing expertise in network security and system hardening. Team placed 5th overall, placing us in the very highest echelon of teams in the nation.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="projects">
+        <div class="container">
+            <h2 class="staggered-letters">
+                <span>P</span><span>r</span><span>o</span><span>j</span><span>e</span><span>c</span><span>t</span><span>s</span>
+            </h2>
+            <div class="project-grid">
+
+                <div class="project-card">
+                    <h3>LBC2 Challenge Developer 2024-2025</h3>
+                    <p>Helped lead the development of cybersecurity CTF challenges across multiple categories for a student-led CTF competition. Created and tested challenges for both beginner and advanced divisions, ensuring appropriate difficulty scaling and educational value.</p>
+                    <div class="tech-stack">
+                        <span class="tech-tag">CTF Development</span>
+                        <span class="tech-tag">Security Testing</span>
+                        <span class="tech-tag">Teamwork</span>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <h3>Kinesis Scorebot</h3>
+                    <p>A lightweight, terminal-based vulnerability scoring system for Linux, designed for Cyberpatriot-style practice. Written entirely in Bash. <a href="https://github.com/mattkoco/Kinesis-Scorebot" target="_blank" class="project-link">View on GitHub</a></p>
+                    <div class="tech-stack">
+                        <span class="tech-tag">Bash</span>
+                        <span class="tech-tag">Linux</span>
+                        <span class="tech-tag">System Security</span>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <h3>Sisyphus CTF Toolkit</h3>
+                    <p>A collaborative CTF knowledge repository containing our team's methodology, tools, and tips. This is an ongoing project to centralize our collective expertise. <a href="https://github.com/mattkoco/Sisyphus" target="_blank" class="project-link">View on GitHub</a></p>
+                    <div class="tech-stack">
+                        <span class="tech-tag">CTF</span>
+                        <span class="tech-tag">Education</span>
+                        <span class="tech-tag">Blue Team</span>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <h3>LBCSI Linux / CTF Training Lead 2024-2025 </h3>
+                    <p>Created content to teach Linux System Security during the first semester of the year, and both basic and advanced CTF classes in the second semester. Training included powerpoint lessons, hands-on modules, and virtual machines built to teach Linux hardening.</p>
+                    <div class="tech-stack">
+                        <span class="tech-tag">System Security</span>
+                        <span class="tech-tag">Linux</span>
+                        <span class="tech-tag">CTF</span>     
+                        <span class="tech-tag">Teaching/Leadership</span>           
+
+            </div>
+        </div>
+    </section>
+
+    <section id="gallery" class="gallery">
+        <div class="container">
+            <h2 class="staggered-letters">
+                <span>G</span><span>a</span><span>l</span><span>l</span><span>e</span><span>r</span><span>y</span>
+            </h2>
+            <div class="gallery-grid">
+                <div class="gallery-item" data-title="LBC2 2024">
+                    <img src="image1.jpg" alt="LBC2 2024">
+                </div>
+                <div class="gallery-item" data-title="Cyberpatriot Nationals">
+                    <img src="image2.jpg" alt="Cyberpatriot Nationals">
+                </div>
+                <div class="gallery-item" data-title="RTARF Cyber Warrior CTF">
+                    <img src="image3.png" alt="RTARF Cyber Warrior CTF">
+                </div>
+                <div class="gallery-item" data-title="Cyberpatriot National Finals Banquet">
+                    <img src="image4.png" alt="Cyberpatriot National Finals Banquet">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal">×</button>
+            <img src="" alt="">
+            <div class="modal-title"></div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 Matthew Kocorowski (This website is 60% vibecoded)</p>
+            <a href="https://github.com/mattkoco" target="_blank">GitHub</a>
+        </div>
+    </footer>
+
     <script>
         // Modal functionality
         function openModal(imgSrc, title) {
@@ -464,7 +586,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // add click handlers to gallery images
+            // Add click handlers to gallery images
             document.querySelectorAll('.gallery-item').forEach(item => {
                 item.addEventListener('click', function() {
                     const imgSrc = this.querySelector('img').src;
@@ -473,124 +595,33 @@
                 });
             });
 
+            // Close modal when clicking close button
             document.querySelector('.close-modal').addEventListener('click', closeModal);
+
+            // Close modal when clicking outside the image
             document.querySelector('.modal-overlay').addEventListener('click', function(e) {
                 if (e.target === this) {
                     closeModal();
                 }
             });
-        });
-    </script>
-</head>
-<body>
-    <div class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <a href="https://github.com/mattkoco" target="_blank" style="text-decoration: none; color: inherit; display: inline-block;">
-                    <h1>Matthew Kocorowski</h1>
-                </a>
-                <p>High School Student | CTF Competitor | Product Developer | Cyberpatriot National Finalist</p>
-            </div>
-        </div>
-    </div>
+            
+            // Add scroll animation for cards
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
 
-    <section class="achievements">
-        <div class="container">
-            <h2><span>M</span><span>y</span><span> </span><span>A</span><span>c</span><span>h</span><span>i</span><span>e</span><span>v</span><span>e</span><span>m</span><span>e</span><span>n</span><span>t</span><span>s</span></h2>
-            <div class="achievement-card">
-                <h3>CTF</h3>
-                <p>Competed in many domestic and some international CTF competitions, and placed well consistently. Highlights include 6th out of 77 teams at the RTARF Cyber Warrior Competition, and Runner-Up at the 2023 Cyber Maryland (MDC3) CTF. Primarily specialize in digital forensics CTF challenges, such as disk forensics and memory dump analysis.</p>
-            </div>
-            <div class="achievement-card">
-                <h3>Cyberpatriot Nationals</h3>
-                <p>During the 2024-2025 CyberPatriot XVII season, my team, "Axios", placed 9th in the semifinals round, qualifying us for the national finals competition. At finals, we placed 5th, putting us above all but 4 out of almost 5000 CyberPatriot teams for the season.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="projects">
-        <div class="container">
-            <h2 class="text-center mb-12">
-                <span>P</span><span>r</span><span>o</span><span>j</span><span>e</span><span>c</span><span>t</span><span>s</span>
-            </h2>
-            <div class="project-grid">
-                <div class="project-card">
-                    <h3>LBC2 Challenge Developer 2024-2025</h3>
-                    <p>Helped lead the development of cybersecurity CTF challenges across multiple categories including Forensics, Reverse Engineering, Web Exploitation, and OSINT for a student-led CTF competition (Loyola Blakefield Cyber Challenge, or LBC2 for short). Created and tested challenges for both beginner and advanced divisions, ensuring appropriate difficulty scaling and educational value. Additionally contributed to OS challenge development, developing and testing challenges in both offensive and defensive security operations.</p>
-                    <div class="tech-stack">
-                        <span class="tech-tag">CTF Development</span>
-                        <span class="tech-tag">Security Testing</span>
-                        <span class="tech-tag">Teamwork and Leadership</span>
-                    </div>
-                </div>
-                <div class="project-card">
-                    <h3>Kinesis Scorebot</h3>
-                    <p>A lightweight, terminal-based vulnerability scoring system for Linux systems, designed to facilitate Cyberpatriot-style practice environments. Written entirely in Bash, this user-friendly tool enables easy development and testing of find-and-fix vulnerability scenarios, helping teams prepare for cybersecurity competitions through realistic scoring and feedback mechanisms. <a href="https://github.com/mattkoco/Kinesis-Scorebot" target="_blank" style="color: var(--primary); text-decoration: none;">View on GitHub</a></p>
-                    <div class="tech-stack">
-                        <span class="tech-tag">Bash</span>
-                        <span class="tech-tag">Linux</span>
-                        <span class="tech-tag">System Security</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="gallery">
-        <div class="container">
-            <h2 class="text-center mb-12">
-                <span>G</span><span>a</span><span>l</span><span>l</span><span>e</span><span>r</span><span>y</span>
-            </h2>
-            <div class="gallery-grid">
-                <div class="gallery-item" data-title="LBC2 2025">
-                    <img src="image1.JPG" alt="LBC2 2025">
-                </div>
-                <div class="gallery-item" data-title="Cyberpatriot National Finals Banquet">
-                    <img src="image2.jpg" alt="Cyberpatriot National Finals Banquet">
-                </div>
-                <div class="gallery-item" data-title="RTARF Cyber Warrior CTF">
-                    <img src="image3.png" alt="RTARF Cyber Warrior CTF">
-                </div>
-                <div class="gallery-item" data-title="Cyberpatriot National Finals">
-                    <img src="image4.png" alt="Cyberpatriot National Finals">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <button class="close-modal">&times;</button>
-            <img src="" alt="">
-            <div class="modal-title"></div>
-        </div>
-    </div>
-
-    <script>
-        // scroll effect
-        window.addEventListener('scroll', () => {
-            const scroll = window.scrollY;
-            const hero = document.querySelector('.hero');
-            hero.style.backgroundPosition = `center ${scroll * 0.5}px`;
-        });
-
-        // scroll effect on cards
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
+            document.querySelectorAll('.achievement-card, .project-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.6s ease-out';
+                observer.observe(card);
             });
-        });
-
-        document.querySelectorAll('.achievement-card').forEach(card => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'all 0.5s ease-out';
-            observer.observe(card);
         });
     </script>
 </body>
 </html>
-
