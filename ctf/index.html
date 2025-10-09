@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LB{CTF}</title>
+  <style>
+    :root{
+      --bg: #0b0d10;
+      --card: #11151b;
+      --muted: #9aa4b2;
+      --text: #e6edf3;
+      --accent: #6ea8fe;
+      --ring: rgba(110,168,254,.35);
+      --ok: #36d399;
+      --warn: #fbbf24;
+      --hard: #ef4444;
+      --shadow: 0 8px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    @media (prefers-color-scheme: light){
+      :root{ --bg:#f6f7fb; --card:#ffffff; --text:#0f172a; --muted:#5b6472; --accent:#3b82f6; --ring:rgba(59,130,246,.25); --shadow: 0 8px 30px rgba(0,0,0,.08); }
+    }
+    *{ box-sizing:border-box }
+    html,body{ height:100% }
+    body{
+      margin:0; font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(110,168,254,.10), transparent),
+                  radial-gradient(1000px 500px at -10% 0%, rgba(54,211,153,.08), transparent), var(--bg);
+      color:var(--text);
+    }
+    header{
+      max-width:1100px; margin:32px auto 16px; padding:0 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    }
+    .brand{ display:flex; align-items:center; gap:12px; flex:1 1 auto }
+    .logo{ width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg,var(--accent),#22d3ee); box-shadow:var(--shadow); position:relative; overflow:hidden }
+    .logo::after{ content:""; position:absolute; inset:6px; border-radius:8px; background:linear-gradient(135deg,rgba(255,255,255,.15),transparent) }
+    h1{ margin:0; font-weight:700; letter-spacing:.2px; font-size: clamp(20px, 3vw, 28px) }
+    .muted{ color:var(--muted); font-size:.95rem }
+
+    .controls{ display:flex; gap:10px; flex-wrap:wrap }
+    .input, .select{
+      appearance:none; border:1px solid transparent; background:var(--card); color:var(--text);
+      padding:10px 12px; border-radius:12px; box-shadow:var(--shadow);
+      outline:none; min-width: 180px;
+    }
+    .input:focus, .select:focus{ border-color: var(--accent); box-shadow: 0 0 0 6px var(--ring), var(--shadow) }
+    .select{ min-width: 140px }
+    .pill{ display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-size:.78rem; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.06) }
+
+    main{ max-width:1100px; margin:10px auto 60px; padding:0 20px }
+    .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:16px }
+
+    .card{
+      background: var(--card); border:1px solid rgba(255,255,255,.06); border-radius: var(--radius);
+      padding:16px; box-shadow: var(--shadow); position:relative; overflow:hidden; cursor:pointer; transition: transform .12s ease, border-color .12s ease;
+    }
+    .card:hover{ transform: translateY(-2px); border-color: var(--accent) }
+    .card h3{ margin:4px 0 6px; font-size:1.05rem }
+    .card .meta{ display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 2px }
+    .badge{ display:inline-flex; align-items:center; gap:6px; padding:5px 8px; border-radius:10px; font-size:.78rem; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.06) }
+    .diff-easy{ color:var(--ok) }
+    .diff-med{ color:var(--warn) }
+    .diff-hard{ color:var(--hard) }
+    .date{ font-size:.78rem; color:var(--muted) }
+
+    .empty{ text-align:center; padding:40px 12px; color:var(--muted) }
+
+    dialog{ width:min(720px, 92vw); border:none; padding:0; border-radius: 20px; overflow:hidden; box-shadow: 0 20px 70px rgba(0,0,0,.45); background: var(--card); color:var(--text) }
+    dialog::backdrop{ backdrop-filter: blur(6px) brightness(.7) }
+    .modal-head{ padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; align-items:center; justify-content:space-between; gap:12px }
+    .modal-title{ margin:0; font-size:1.15rem }
+    .modal-body{ padding:18px 20px; white-space:pre-wrap; word-wrap:break-word }
+    .modal-meta{ display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 0 }
+    .close{ border:1px solid rgba(255,255,255,.1); background:transparent; color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer }
+    .close:hover{ border-color: var(--accent) }
+
+    footer{ max-width:1100px; margin:28px auto 60px; padding:0 20px; color:var(--muted); font-size:.9rem }
+    a{ color: var(--accent); text-decoration: none }
+    a:hover{ text-decoration: underline }
+  </style>
+  <script>
+    // lightweight string obfuscation for casual source-skimmers
+    const _b64 = s => atob(s);
+  </script>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>LB{CTF}</h1>
+        <div class="muted">Weekly CTF Challenges for LBCSI</div>
+      </div>
+    </div>
+    <div class="controls">
+      <input id="search" class="input" placeholder="Search title or text…" />
+      <select id="category" class="select">
+        <option value="">All categories</option>
+        <option>crypto</option>
+        <option>forensics</option>
+        <option>web</option>
+        <option>pwn</option>
+        <option>rev</option>
+        <option>misc</option>
+      </select>
+      <select id="difficulty" class="select">
+        <option value="">Any difficulty</option>
+        <option value="easy">easy</option>
+        <option value="medium">medium</option>
+        <option value="hard">hard</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <section id="grid" class="grid" aria-live="polite"></section>
+    <div id="empty" class="empty" hidden>No challenges match your filters.</div>
+  </main>
+
+  <dialog id="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="modalTitle" class="modal-title"></h2>
+        <div class="modal-meta">
+          <span id="modalCat" class="badge"></span>
+          <span id="modalDiff" class="badge"></span>
+          <span id="modalDate" class="badge date"></span>
+        </div>
+      </div>
+      <button class="close" onclick="modal.close()">Close</button>
+    </div>
+    <div id="modalBody" class="modal-body"></div>
+    <div id="verifyWrap" class="modal-body" style="border-top:1px solid rgba(255,255,255,.06); display:none">
+      <form id="verifyForm" onsubmit="return false;" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+        <input id="flagInput" class="input" placeholder="Enter flag" style="flex:1 1 240px" autocomplete="off" />
+        <button id="checkBtn" class="close" type="button">Check flag</button>
+        <span id="verifyMsg" class="muted"></span>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Admin hasher (client-side SHA-256 generator) -->
+  <dialog id="hashModal">
+    <div class="modal-head">
+      <h2 class="modal-title">Admin Hasher</h2>
+      <button class="close" type="button" onclick="hashModal.close()">Close</button>
+    </div>
+    <div class="modal-body">
+      <label for="hashInput" class="muted">Enter exact flag text to hash (no salt):</label>
+      <input id="hashInput" class="input" placeholder="CTF{your-flag-here}" style="width:100%; margin-top:8px" />
+      <div id="hashOut" style="margin-top:12px; word-break:break-all"></div>
+      <button id="copyHash" class="close" type="button" style="margin-top:10px">Copy hash</button>
+    </div>
+  </dialog>
+
+  <footer>
+    <button id="openHasher" class="close" type="button" title="Opens a local SHA-256 generator for admins">Open hasher (admin)</button>
+  </footer>
+
+  <script>
+    // 1) EDIT ME: your daily challenges live here
+    let challenges = [];
+
+    // 2) Minimal rendering + filtering + verification logic
+    const els = {
+      grid: document.getElementById('grid'),
+      empty: document.getElementById('empty'),
+      search: document.getElementById('search'),
+      category: document.getElementById('category'),
+      difficulty: document.getElementById('difficulty'),
+      modal: document.getElementById('modal'),
+      mTitle: document.getElementById('modalTitle'),
+      mCat: document.getElementById('modalCat'),
+      mDiff: document.getElementById('modalDiff'),
+      mDate: document.getElementById('modalDate'),
+      mBody: document.getElementById('modalBody'),
+    };
+
+    function difficultyBadgeClass(level){
+      if(level === 'easy') return 'badge diff-easy';
+      if(level === 'medium') return 'badge diff-med';
+      return 'badge diff-hard';
+    }
+
+    function render(){
+      const q = els.search.value.trim().toLowerCase();
+      const cat = (els.category.value||'').toLowerCase();
+      const diff = (els.difficulty.value||'').toLowerCase();
+
+      const list = challenges.filter(c => {
+        const hay = (c.title + ' ' + c.body + ' ' + c.category + ' ' + c.difficulty).toLowerCase();
+        const okQ = !q || hay.includes(q);
+        const okC = !cat || c.category.toLowerCase() === cat;
+        const okD = !diff || c.difficulty.toLowerCase() === diff;
+        return okQ && okC && okD;
+      });
+
+      els.grid.innerHTML = '';
+      if(list.length === 0){ els.empty.hidden = false; return; }
+      els.empty.hidden = true;
+
+      list.forEach(c => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.setAttribute('tabindex','0');
+        card.setAttribute('role','button');
+        card.setAttribute('aria-label', `${c.title}, ${c.category}, ${c.difficulty}`);
+        card.innerHTML = `
+          <span class="date">${c.date ?? ''}</span>
+          <h3>${escapeHTML(c.title)}</h3>
+          <div class="meta">
+            <span class="badge">${escapeHTML(c.category)}</span>
+            <span class="${difficultyBadgeClass(c.difficulty)}">${escapeHTML(c.difficulty)}</span>
+          </div>
+        `;
+        card.addEventListener('click', () => openModal(c));
+        card.addEventListener('keypress', (e) => { if(e.key==='Enter' || e.key===' '){ openModal(c); }});
+        els.grid.appendChild(card);
+      });
+    }
+
+    function openModal(c){
+      els.mTitle.textContent = c.title;
+      els.mCat.textContent = c.category;
+      els.mCat.className = 'badge';
+      els.mDiff.textContent = c.difficulty;
+      els.mDiff.className = difficultyBadgeClass(c.difficulty);
+      els.mDate.textContent = c.date || '';
+
+      const linkLine = c.link ? `\n\nAttachment: ${c.link}` : '';
+      els.mBody.textContent = (c.body || '') + linkLine;
+
+      // Show verification UI when a per-challenge flag-hash is present
+      const hasFlag = !!c["flag-hash"]; 
+      document.getElementById('verifyWrap').style.display = hasFlag ? 'block' : 'none';
+      if(hasFlag){
+        const input = document.getElementById('flagInput');
+        const msg = document.getElementById('verifyMsg');
+        msg.textContent = '';
+        input.value = '';
+        const btn = document.getElementById('checkBtn');
+        btn.onclick = async () => {
+          const ok = await checkFlag(input.value, c["flag-hash"]);
+          msg.textContent = ok ? 'Correct!' : 'Incorrect';
+          msg.style.color = ok ? 'var(--ok)' : 'var(--hard)';
+        };
+      }
+
+      els.modal.showModal();
+      if(c.id) location.hash = c.id;
+    }
+
+    function escapeHTML(s){
+      return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[m]));
+    }
+
+    // wire filters
+    els.search.addEventListener('input', render);
+    els.category.addEventListener('change', render);
+    els.difficulty.addEventListener('change', render);
+
+    // (leftover verify precompute stays inert unless used)
+    (async function initVerify(){
+      for(const c of challenges){
+        if(c.verify && c.verify.computeFrom){
+          const canon = canonicalize(c.verify.computeFrom, c.verify);
+          const dig = await sha256Hex(canon);
+          c.verify.hashes = [dig];
+          delete c.verify.computeFrom;
+        }
+      }
+    })();
+
+    // wire up admin hasher
+    const hashModal = document.getElementById('hashModal');
+    const openHasher = document.getElementById('openHasher');
+    const hashInput = document.getElementById('hashInput');
+    const hashOut = document.getElementById('hashOut');
+    const copyHash = document.getElementById('copyHash');
+
+    if(openHasher){
+      openHasher.addEventListener('click', () => {
+        hashInput.value = '';
+        hashOut.textContent = '';
+        hashModal.showModal();
+        setTimeout(()=> hashInput.focus(), 50);
+      });
+    }
+    if(hashInput){
+      const updateHash = async () => {
+        const v = hashInput.value;
+        if(!v){ hashOut.textContent = ''; return; }
+        const hex = await sha256Hex(v);
+        hashOut.textContent = `sha256: ${hex}`;
+      };
+      hashInput.addEventListener('input', updateHash);
+      hashInput.addEventListener('change', updateHash);
+    }
+    if(copyHash){
+      copyHash.addEventListener('click', async () => {
+        const txt = hashOut.textContent.replace('sha256: ', '').trim();
+        if(!txt) return;
+        try{
+          if(navigator.clipboard && window.isSecureContext){
+            await navigator.clipboard.writeText(txt);
+          }else{
+            const ta = document.createElement('textarea');
+            ta.value = txt; document.body.appendChild(ta); ta.select();
+            try{ document.execCommand('copy'); } finally { document.body.removeChild(ta); }
+          }
+        }catch(_e){ /* ignore */ }
+      });
+    }
+
+    // crypto helpers
+    async function sha256Hex(msg){
+      if (window.crypto && window.crypto.subtle) {
+        const enc = new TextEncoder();
+        const data = enc.encode(msg);
+        const buf = await crypto.subtle.digest('SHA-256', data);
+        const bytes = new Uint8Array(buf);
+        let hex = '';
+        for (let i = 0; i < bytes.length; i++) hex += bytes[i].toString(16).padStart(2,'0');
+        return hex;
+      } else {
+        return sha256HexPolyfill(msg);
+      }
+    }
+
+    // Minimal SHA-256 polyfill (UTF-8 aware)
+    function sha256HexPolyfill(str){
+      const bytes = (function(s){
+        const utf8 = unescape(encodeURIComponent(s));
+        const out = new Uint8Array(utf8.length);
+        for (let i=0; i < utf8.length; i++) out[i] = utf8.charCodeAt(i);
+        return out;
+      })(str);
+      let h0=0x6a09e667,h1=0xbb67ae85,h2=0x3c6ef372,h3=0xa54ff53a,h4=0x510e527f,h5=0x9b05688c,h6=0x1f83d9ab,h7=0x5be0cd19;
+      const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+        0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+        0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+        0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+        0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+        0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+        0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+        0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+      const bitLen = bytes.length * 8;
+      const withOne = new Uint8Array(bytes.length + 1); withOne.set(bytes); withOne[bytes.length] = 0x80;
+      let zeroPadLen = (56 - (withOne.length % 64) + 64) % 64;
+      const padded = new Uint8Array(withOne.length + zeroPadLen + 8); padded.set(withOne);
+      for(let i=0;i<8;i++) padded[padded.length-1-i] = (bitLen >>> (i*8)) & 0xff;
+      const w = new Uint32Array(64);
+      for(let i=0;i<padded.length;i+=64){
+        for(let t=0;t<16;t++){
+          const j=i + t*4;
+          w[t] = (padded[j]<<24) | (padded[j+1]<<16) | (padded[j+2]<<8) | (padded[j+3]);
+        }
+        for(let t=16;t<64;t++){
+          const s0 = ror(w[t-15],7) ^ ror(w[t-15],18) ^ (w[t-15]>>>3);
+          const s1 = ror(w[t-2],17) ^ ror(w[t-2],19) ^ (w[t-2]>>>10);
+          w[t] = (w[t-16] + s0 + w[t-7] + s1) >>> 0;
+        }
+        let a=h0,b=h1,c=h2,d=h3,e=h4,f=h5,g=h6,h=h7;
+        for(let t=0;t<64;t++){
+          const S1 = ror(e,6) ^ ror(e,11) ^ ror(e,25);
+          const ch = (e & f) ^ (~e & g);
+          const temp1 = (h + S1 + ch + K[t] + w[t]) >>> 0;
+          const S0 = ror(a,2) ^ ror(a,13) ^ ror(a,22);
+          const maj = (a & b) ^ (a & c) ^ (b & c);
+          const temp2 = (S0 + maj) >>> 0;
+          h=g; g=f; f=e; e=(d + temp1) >>> 0; d=c; c=b; b=a; a=(temp1 + temp2) >>> 0;
+        }
+        h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0;
+        h4 = (h4 + e) >>> 0; h5 = (h5 + f) >>> 0; h6 = (h6 + g) >>> 0; h7 = (h7 + h) >>> 0;
+      }
+      return [h0,h1,h2,h3,h4,h5,h6,h7].map(n => n.toString(16).padStart(8,'0')).join('');
+      function ror(x,n){ return (x>>>n) | (x<<(32-n)); }
+    }
+
+    async function checkFlag(flag, hashHex){
+      const digest = await sha256Hex(String(flag || '').trim());
+      return digest.toLowerCase() === String(hashHex || '').trim().toLowerCase();
+    }
+
+    // optional: open by hash on load
+    window.addEventListener('load', () => {
+      const byId = challenges.find(c => '#' + (c.id||'') === location.hash);
+      if(byId) openModal(byId);
+    });
+
+    // close on ESC
+    //const modal = els.modal;
+    //modal.addEventListener('cancel', (e) => { e.preventDefault(); modal.close(); });
+    //window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.open) modal.close(); });
+    
+    
+
+    // --- CHALLENGES (edit below this line) ---
+    challenges = [
+      {
+        id: "sanity-check",
+        title: "Sanity Check",
+        category: "misc",
+        difficulty: "easy",
+        date: "2025-10-09",
+        body: "Warmup: decode this base64 string and follow the usual flag format. Base64: bGJjdGZ7Y2hlY2t5b3VyYnJhaW59",
+        "flag-hash": "019175aae9a148e2caba4329ec19318b3c49dae8b6b68436f291ccf6d9c04366"
+      },
+
+      {
+        id: "wall-e",
+        title:"wall-e",
+        category: "web",
+        difficulty: "easy",
+        date: "2025-10-09",
+        body: "I hid a flag somewhere on this site where the web crawlers will NEVER find it... can you find it?",
+        "flag-hash": "ce28a0fce260874f93caadd33ce3d9f7d1f75836cb8823e3f851014ea6d3354f"
+      }
+    ];
+
+
+
+    // Render grid now that challenges exist
+    render();
+  </script>
+</body>
+</html>
