@@ -33,8 +33,18 @@
       max-width:1100px; margin:32px auto 16px; padding:0 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;
     }
     .brand{ display:flex; align-items:center; gap:12px; flex:1 1 auto }
-    .logo{ width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg,var(--accent),#22d3ee); box-shadow:var(--shadow); position:relative; overflow:hidden }
-    .logo::after{ content:""; position:absolute; inset:6px; border-radius:8px; background:linear-gradient(135deg,rgba(255,255,255,.15),transparent) }
+
+    /* UPDATED: show your PNG logo instead of gradient square */
+    .logo{
+      width:40px;
+      height:40px;
+      border-radius:10px;
+      box-shadow:var(--shadow);
+      display:block;
+      object-fit:contain;      /* keep entire logo visible */
+      background:transparent;
+    }
+
     h1{ margin:0; font-weight:700; letter-spacing:.2px; font-size: clamp(20px, 3vw, 28px) }
     .muted{ color:var(--muted); font-size:.95rem }
 
@@ -87,7 +97,8 @@
 <body>
   <header>
     <div class="brand">
-      <div class="logo" aria-hidden="true"></div>
+      <!-- UPDATED: use your PNG logo -->
+      <img class="logo" src="lbctf_logo.png" alt="LB{CTF} logo" width="40" height="40" decoding="async" />
       <div>
         <h1>LB{CTF}</h1>
         <div class="muted">Weekly CTF Challenges for LBCSI</div>
@@ -389,13 +400,6 @@
       if(byId) openModal(byId);
     });
 
-    // close on ESC
-    //const modal = els.modal;
-    //modal.addEventListener('cancel', (e) => { e.preventDefault(); modal.close(); });
-    //window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.open) modal.close(); });
-    
-    
-
     // --- CHALLENGES (edit below this line) ---
     challenges = [
       {
@@ -407,7 +411,6 @@
         body: "Warmup: decode this base64 string and follow the usual flag format. Base64: bGJjdGZ7Y2hlY2t5b3VyYnJhaW59",
         "flag-hash": "019175aae9a148e2caba4329ec19318b3c49dae8b6b68436f291ccf6d9c04366"
       },
-
       {
         id: "wall-e",
         title:"wall-e",
@@ -418,8 +421,6 @@
         "flag-hash": "ce28a0fce260874f93caadd33ce3d9f7d1f75836cb8823e3f851014ea6d3354f"
       }
     ];
-
-
 
     // Render grid now that challenges exist
     render();
