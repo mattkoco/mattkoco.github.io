@@ -9,7 +9,7 @@ is a real text file served from this site's `fs/` directory.
 
 # Recent blogposts
 
-- [Pwn Me Baby](blog.html#pwn-me-baby) — Full Weak Engineer CTF 2025
+- [Pwn Me Baby](blog.html#pwn-me-baby) > Full Weak Engineer CTF 2025
 
 All posts: [blog.html](blog.html)
 
