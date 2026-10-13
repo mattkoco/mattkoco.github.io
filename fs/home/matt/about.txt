@@ -1,0 +1,23 @@
+Matthew Kocorowski
+==================
+
+I'm an Information Systems student at Stony Brook University
+(B.S. expected May 2030), focused on cybersecurity and Linux.
+
+Most of my work so far has been on the blue-team side: hardening
+Linux systems, building infrastructure on Proxmox and Docker, and
+writing CTF challenges for other students. I'm a two-time
+CyberPatriot National Finalist, and I've helped run capture-the-flag
+competitions for about 300 students in Maryland and about 200 in
+Bangkok, Thailand.
+
+Before college I taught Unity and C# to 200+ students at Code Ninjas
+and led Linux security training at Loyola Blakefield.
+
+See also:
+  ~/education.txt
+  ~/experience/
+  ~/projects/
+  ~/achievements.txt
+  ~/skills.txt
+  ~/contact.txt

@@ -1,0 +1,7 @@
+Welcome to kocorowski (GNU/Linux 6.8.0 x86_64, simulated in your browser)
+
+ * Every file here is a real file fetched from this site.
+ * Pipes, redirects, globs, loops, functions and scripts all work.
+ * Changes you make live in memory and reset on reload.
+
+Type 'help' to get started, or 'cat README.md'.

@@ -1,0 +1,13 @@
+CyberPatriot National Youth Cyber Defense Competition
+  2x National Finalist
+  2025  5th nationally   (top 12 of ~4,000 teams)
+  2026  8th nationally   (top 12 of ~4,000 teams)
+  2026  2nd overall, Cisco Networking Challenge
+
+Royal Thai Armed Forces CTF (Bangkok, Thailand)
+  2025  1st place
+  2024  6th place
+
+HackUMBC, Cybersecurity Track
+  Winner. Designed a multi-stage CTF challenge combining web
+  exploitation, disk forensics, and audio-based cryptography.

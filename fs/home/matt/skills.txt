@@ -1,0 +1,5 @@
+languages:   Java, C#, Bash
+systems:     Linux, Kali Linux, Proxmox, VMware Workstation, Docker
+security:    Linux security & hardening, disk/memory forensics, OSINT
+analysis:    Volatility 3, Autopsy, Wireshark, binwalk
+offense:     Nmap, John the Ripper, Feroxbuster, pwntools, Burp Suite

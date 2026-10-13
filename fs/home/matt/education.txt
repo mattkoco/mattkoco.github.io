@@ -1,0 +1,7 @@
+Stony Brook University                          Stony Brook, NY
+B.S. in Information Systems                     Expected May 2030
+
+Relevant coursework:
+  - Data Structures
+  - Object Oriented Programming
+  - Elements of Statistics

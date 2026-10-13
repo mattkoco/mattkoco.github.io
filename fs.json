@@ -1,0 +1,137 @@
+{
+ "files": [
+  {
+   "p": "/etc/hostname",
+   "s": 11,
+   "m": 420,
+   "o": "root",
+   "t": 1791847717053
+  },
+  {
+   "p": "/etc/motd",
+   "s": 305,
+   "m": 420,
+   "o": "root",
+   "t": 1791847717063
+  },
+  {
+   "p": "/etc/os-release",
+   "s": 130,
+   "m": 420,
+   "o": "root",
+   "t": 1791847717058
+  },
+  {
+   "p": "/etc/passwd",
+   "s": 89,
+   "m": 420,
+   "o": "root",
+   "t": 1791847717060
+  },
+  {
+   "p": "/etc/shadow",
+   "s": 10,
+   "m": 416,
+   "o": "root",
+   "t": 1791847717061
+  },
+  {
+   "p": "/home/matt/.bashrc",
+   "s": 422,
+   "m": 420,
+   "o": "matt",
+   "t": 1791847716921
+  },
+  {
+   "p": "/home/matt/.secret/README",
+   "s": 79,
+   "m": 420,
+   "o": "matt",
+   "t": 1791847716977
+  },
+  {
+   "p": "/home/matt/.secret/flag.b64",
+   "s": 33,
+   "m": 420,
+   "o": "matt",
+   "t": 1791847717052
+  },
+  {
+   "p": "/home/matt/README.md",
+   "s": 1118,
+   "m": 420,
+   "o": "matt",
+   "t": 1791900738423
+  },
+  {
+   "p": "/home/matt/about.txt",
+   "s": 740,
+   "m": 420,
+   "o": "matt",
+   "t": 1791847683837
+  },
+  {
+   "p": "/home/matt/achievements.txt",
+   "s": 464,
+   "m": 420,
+   "o": "matt",
+   "t": 1791847694637
+  },
+  {
+   "p": "/home/matt/bin/contrib",
+   "s": 166,
+   "m": 493,
+   "o": "matt",
+   "t": 1791847716949
+  },
+  {
+   "p": "/home/matt/contact.txt",
+   "s": 129,
+   "m": 420,
+   "o": "matt",
+   "t": 1791847697137
+  },
+  {
+   "p": "/home/matt/education.txt",
+   "s": 231,
+   "m": 420,
+   "o": "matt",
+   "t": 1791847684821
+  },
+  {
+   "p": "/home/matt/experience/code-ninjas.md",
+   "s": 370,
+   "m": 420,
+   "o": "matt",
+   "t": 1791847686541
+  },
+  {
+   "p": "/home/matt/experience/loyola-cyber.md",
+   "s": 590,
+   "m": 420,
+   "o": "matt",
+   "t": 1791847688737
+  },
+  {
+   "p": "/home/matt/projects/cronus.md",
+   "s": 390,
+   "m": 420,
+   "o": "matt",
+   "t": 1791847692625
+  },
+  {
+   "p": "/home/matt/projects/lbc2-ctf.md",
+   "s": 660,
+   "m": 420,
+   "o": "matt",
+   "t": 1791847691045
+  },
+  {
+   "p": "/home/matt/skills.txt",
+   "s": 291,
+   "m": 420,
+   "o": "matt",
+   "t": 1791847696129
+  }
+ ]
+}

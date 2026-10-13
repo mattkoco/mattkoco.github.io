@@ -1,0 +1,8 @@
+#!/bin/bash
+# usage: contrib [github-user]
+# Draws a GitHub contribution graph in the terminal.
+
+user="${1:-mattkoco}"
+echo "github.com/$user"
+echo
+ghcontrib "$user"
