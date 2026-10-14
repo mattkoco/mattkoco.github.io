@@ -28,7 +28,7 @@ def recent_posts_section():
         lines.append("Nothing yet.")
     for p in posts[:RECENT_COUNT]:
         note = p.get("event") or p.get("date") or ""
-        lines.append(f"- [{p['title']}](blog.html#{p['slug']})" + (f" — {note}" if note else ""))
+        lines.append(f"- [{p['title']}](blog.html#{p['slug']})" + (f" <-> {note}" if note else ""))
     lines.append("")
     lines.append(f"All posts: [blog.html](blog.html)")
     return "\n".join(lines) + "\n\n", len(posts[:RECENT_COUNT])
