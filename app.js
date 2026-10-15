@@ -535,7 +535,7 @@ $('st-theme').addEventListener('click', () => window.Themes.pick());
    Rebuilt whenever the theme changes. */
 function updateFavicon() {
   const cs = getComputedStyle(document.documentElement);
-  const accent = (cs.getPropertyValue('--orange').trim()) || '#e78a4e';
+  const accent = (cs.getPropertyValue('--accent').trim()) || '#e78a4e';
   const bg = (cs.getPropertyValue('--bg').trim()) || '#292828';
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">`
     + `<circle cx="16" cy="16" r="16" fill="${accent}"/>`
