@@ -531,6 +531,25 @@ $('act-files').addEventListener('click', () => openFile(HOME + '/README.md'));
 $('act-theme').addEventListener('click', () => window.Themes.pick());
 $('st-theme').addEventListener('click', () => window.Themes.pick());
 
+/* favicon: an "MK" monogram drawn as an SVG, recolored to the active theme.
+   Rebuilt whenever the theme changes. */
+function updateFavicon() {
+  const cs = getComputedStyle(document.documentElement);
+  const accent = (cs.getPropertyValue('--orange').trim()) || '#e78a4e';
+  const bg = (cs.getPropertyValue('--bg').trim()) || '#292828';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">`
+    + `<circle cx="16" cy="16" r="16" fill="${accent}"/>`
+    + `<text x="16" y="16" text-anchor="middle" dominant-baseline="central" `
+    + `font-family="Consolas,Menlo,monospace" font-size="20" font-weight="700" fill="${bg}">M</text>`
+    + `</svg>`;
+  let link = document.querySelector('link[rel="icon"]');
+  if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+  link.type = 'image/svg+xml';
+  link.href = 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+if (window.Themes && window.Themes.onChange) window.Themes.onChange(updateFavicon);
+updateFavicon();
+
 let fsTimer = null;
 function onFsChange() {
   clearTimeout(fsTimer);
