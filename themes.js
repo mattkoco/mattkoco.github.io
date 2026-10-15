@@ -84,6 +84,14 @@ function ramp(t) {
 const byId = id => THEMES.find(t => t.id === id);
 const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 
+/* each theme's signature color, used for the "MK" logo and the favicon */
+const ACCENT = {
+  'gruvbox-material': '#e78a4e', 'dark-modern': '#3b8eea', 'monokai': '#f92672',
+  'tokyo-night': '#7aa2f7', 'one-dark-pro': '#61afef', 'dracula': '#bd93f9',
+  'catppuccin-mocha': '#cba6f7', 'nord': '#88c0d0', 'github-dark': '#58a6ff',
+  'github-light': '#0969da', 'solarized-light': '#268bd2',
+};
+
 function apply(id, { save = true } = {}) {
   const t = byId(id);
   if (!t) return false;
@@ -94,6 +102,7 @@ function apply(id, { save = true } = {}) {
     '--fg': c.fg, '--fg-bright': c.bright, '--muted': c.muted, '--dim': c.dim,
     '--red': c.red, '--orange': c.orange, '--yellow': c.yellow, '--green': c.green, '--aqua': c.aqua, '--blue': c.blue, '--purple': c.purple,
     '--ansi-black': c.black,
+    '--accent': ACCENT[t.id] || c.orange,
   };
   for (const [k, v] of Object.entries(t.syn)) vars['--syn-' + k] = v;
   ramp(t).forEach((v, i) => { vars['--gh' + i] = v; });
