@@ -1,244 +1,579 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Matthew Kocorowski</title>
-<meta name="description" content="Matthew Kocorowski: Information Systems student, cybersecurity and Linux.">
-</head>
-<body>
-<style>
-/* Layout: a VS Code window (title, activity bar, explorer, editor over a terminal panel, status bar).
-   Default look is Gruvbox Material; themes.js swaps every token below at runtime. */
-:root {
-  --syn-kw: #ea6962; --syn-str: #a9b665; --syn-var: #7daea3; --syn-num: #d3869b; --syn-com: #928374; --syn-head: #e78a4e;
-  --syn-bold: #d8a657; --syn-mark: #ea6962; --syn-link: #7daea3; --syn-key: #89b482; --syn-con: #e78a4e;
-  color-scheme: dark;
-  --bg: #292828;
-  --bg-deep: #242322;
-  --bg-hover: #32302f;
-  --bg-sel: #45403d;
-  --line: #3a3735;
-  --fg: #d4be98;
-  --fg-bright: #ddc7a1;
-  --muted: #928374;
-  --dim: #7c6f64;
-  --red: #ea6962;
-  --orange: #e78a4e;
-  --yellow: #d8a657;
-  --green: #a9b665;
-  --aqua: #89b482;
-  --blue: #7daea3;
-  --purple: #d3869b;
-  --ansi-black: #32302f;
-  --gh0: #343130; --gh1: #4a5131; --gh2: #6b7a3a; --gh3: #8a9a4e; --gh4: #a9b665;
-  --mono: Consolas, Menlo, Monaco, "Droid Sans Mono", "Liberation Mono", "Courier New", monospace;
-  --ui: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", Ubuntu, "Droid Sans", sans-serif;
-  --code-size: 14px;
-  --code-lh: 19px;
+/* app.js: the VS Code-style window around the shell (terminal, explorer, editor, GitHub graph). */
+'use strict';
+(function () {
+const { Shell, buildFS, parse, Incomplete, ExitSig, Interrupt, HOME } = window.Bash;
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const GH_USER = 'mattkoco';
+
+/* ================================================================ */
+/* ANSI -> DOM                                                      */
+/* ================================================================ */
+const ANSI = ['--ansi-black', '--red', '--green', '--yellow', '--blue', '--purple', '--aqua', '--fg'];
+const ansiVar = k => `var(${k < 8 ? ANSI[k] : k === 8 ? '--muted' : ANSI[k - 8]})`;
+const URL_RE = /(https?:\/\/[^\s)'"<>]+)/g;
+
+function renderAnsi(text, st) {
+  const frag = document.createDocumentFragment();
+  const re = /\x1b\[([0-9;]*)([A-Za-z])/g;
+  let last = 0, m;
+  const emit = s => {
+    s = s.replace(/\r/g, '').replace(/[\x00-\x08\x0b-\x1f\x7f]/g, '');
+    if (!s) return;
+    const styled = st.fg || st.bg || st.b || st.i || st.u;
+    const parent = styled ? document.createElement('span') : frag;
+    if (styled) {
+      if (st.fg) parent.style.color = st.fg;
+      if (st.bg) parent.style.background = st.bg;
+      if (st.b) parent.classList.add('a-b');
+      if (st.i) parent.classList.add('a-i');
+      if (st.u) parent.classList.add('a-u');
+    }
+    let k = 0, um;
+    URL_RE.lastIndex = 0;
+    while ((um = URL_RE.exec(s))) {
+      if (um.index > k) parent.append(s.slice(k, um.index));
+      const a = document.createElement('a');
+      a.href = um[1]; a.target = '_blank'; a.rel = 'noopener'; a.textContent = um[1];
+      parent.append(a);
+      k = um.index + um[1].length;
+    }
+    if (k < s.length) parent.append(s.slice(k));
+    if (styled) frag.append(parent);
+  };
+  while ((m = re.exec(text))) {
+    emit(text.slice(last, m.index));
+    last = re.lastIndex;
+    if (m[2] !== 'm') continue;
+    const codes = m[1] === '' ? [0] : m[1].split(';').map(Number);
+    for (let i = 0; i < codes.length; i++) {
+      const c = codes[i];
+      if (c === 0) { st.fg = st.bg = null; st.b = st.i = st.u = false; }
+      else if (c === 1) st.b = true;
+      else if (c === 3) st.i = true;
+      else if (c === 4) st.u = true;
+      else if (c === 22) st.b = false;
+      else if (c === 23) st.i = false;
+      else if (c === 24) st.u = false;
+      else if (c >= 30 && c <= 37) st.fg = ansiVar(c - 30);
+      else if (c >= 90 && c <= 97) st.fg = ansiVar(c - 90 + 8);
+      else if (c >= 40 && c <= 47) st.bg = ansiVar(c - 40);
+      else if (c >= 100 && c <= 107) st.bg = ansiVar(c - 100 + 8);
+      else if (c === 39) st.fg = null;
+      else if (c === 49) st.bg = null;
+      else if ((c === 38 || c === 48) && codes[i + 1] === 2) {
+        const col = `rgb(${codes[i + 2]},${codes[i + 3]},${codes[i + 4]})`;
+        if (c === 38) st.fg = col; else st.bg = col;
+        i += 4;
+      } else if ((c === 38 || c === 48) && codes[i + 1] === 5) i += 2;
+    }
+  }
+  emit(text.slice(last));
+  return frag;
 }
-html { height: 100%; box-sizing: border-box; background: var(--bg); }
-*, *::before, *::after { box-sizing: inherit; }
-[hidden] { display: none !important; }
-body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font: 13px/1.4 var(--ui); overflow: hidden; }
-a { color: var(--blue); }
-button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
-:focus-visible { outline: 1px solid var(--blue); outline-offset: -1px; }
 
-.win { height: 100%; display: grid; grid-template-rows: 30px minmax(0, 1fr) 22px; }
-
-/* title bar */
-.titlebar { display: grid; place-items: center; color: var(--muted); font-size: 12px; border-bottom: 1px solid var(--line); user-select: none; position: relative; }
-.titlebar .who { position: absolute; left: 12px; top: 0; bottom: 0; display: flex; align-items: center; gap: 6px; color: var(--dim); }
-.titlebar .who b { color: var(--orange); font-weight: 600; }
-
-.main { display: grid; grid-template-columns: 48px 230px minmax(0, 1fr); min-height: 0; }
-
-/* activity bar */
-.activity { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-block: 6px; border-right: 1px solid var(--line); }
-.activity .act { width: 48px; height: 44px; display: grid; place-items: center; color: var(--dim); position: relative; text-decoration: none; }
-.activity .act:hover { color: var(--fg); }
-.activity .act.on { color: var(--fg-bright); }
-.activity .act.on::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; background: var(--fg); }
-.activity svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
-.activity .badge { position: absolute; right: 9px; bottom: 8px; min-width: 14px; height: 14px; border-radius: 7px; background: var(--muted); color: var(--bg); font-size: 9px; line-height: 14px; text-align: center; font-weight: 700; padding: 0 3px; }
-.activity .spacer { flex: 1; }
-
-/* explorer */
-.sidebar { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; user-select: none; }
-.side-head { height: 35px; display: flex; align-items: center; padding-left: 20px; font-size: 11px; letter-spacing: .04em; color: var(--muted); }
-.side-sec { display: flex; align-items: center; gap: 2px; height: 22px; padding-left: 2px; font-size: 11px; font-weight: 700; letter-spacing: .02em; color: var(--fg); }
-.tree { overflow: auto; flex: 1; padding-bottom: 12px; }
-.ti { display: flex; align-items: center; gap: 4px; height: 22px; width: 100%; text-align: left; white-space: nowrap; color: var(--fg); font-size: 13px; }
-.ti:hover { background: var(--bg-hover); }
-.ti.sel { background: var(--bg-sel); }
-.ti .chev { width: 16px; height: 16px; flex: none; color: var(--muted); }
-.ti .chev svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; }
-.ti .ic { width: 16px; flex: none; text-align: center; font: 700 10px/1 var(--mono); }
-.ti .nm { overflow: hidden; text-overflow: ellipsis; }
-.ic.md { color: var(--blue); } .ic.txt { color: var(--muted); } .ic.sh { color: var(--green); } .ic.json { color: var(--yellow); } .ic.cfg { color: var(--dim); }
-
-/* editor column */
-.work { display: grid; grid-template-rows: 35px 22px minmax(0, 1fr) 5px 46%; min-width: 0; min-height: 0; }
-.tabs { display: flex; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
-.tabs::-webkit-scrollbar { display: none; }
-.tab { display: flex; align-items: center; gap: 6px; padding: 0 10px 0 14px; height: 35px; color: var(--dim); white-space: nowrap; border-right: 1px solid var(--line); position: relative; flex: none; font-size: 13px; }
-.tab:hover { color: var(--fg); }
-.tab.on { color: var(--fg-bright); }
-.tab.on::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 1px; background: var(--muted); }
-.tab .x { width: 18px; height: 18px; display: grid; place-items: center; border-radius: 4px; color: var(--dim); visibility: hidden; font-size: 14px; line-height: 1; }
-.tab.on .x, .tab:hover .x { visibility: visible; }
-.tab .x:hover { background: var(--bg-hover); color: var(--fg); }
-.tab.gone .label { text-decoration: line-through; }
-.crumbs { display: flex; align-items: center; gap: 4px; padding-left: 16px; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; }
-.crumbs .sep { color: var(--dim); }
-
-.editor { overflow: auto; min-height: 0; font: var(--code-size)/var(--code-lh) var(--mono); }
-.code { display: grid; grid-template-columns: auto minmax(0, 1fr); padding-block: 4px 40px; min-width: max-content; }
-.code .ln { color: var(--dim); text-align: right; padding: 0 18px 0 16px; user-select: none; opacity: .7; }
-.code .lc { white-space: pre; padding-right: 24px; }
-.editor .note { padding: 24px; color: var(--muted); font-family: var(--ui); }
-/* syntax */
-.k { color: var(--syn-kw); } .s { color: var(--syn-str); } .v { color: var(--syn-var); } .n { color: var(--syn-num); }
-.c { color: var(--syn-com); font-style: italic; } .h { color: var(--syn-head); font-weight: 700; } .b { color: var(--syn-bold); font-weight: 700; }
-.m { color: var(--syn-mark); } .u { color: var(--syn-link); text-decoration: underline; text-underline-offset: 2px; } .key { color: var(--syn-key); } .o { color: var(--syn-con); }
-
-/* theme quick pick */
-.qp-wrap { position: fixed; inset: 0; z-index: 50; display: flex; justify-content: center; align-items: flex-start; padding: calc(env(safe-area-inset-top, 0px) + 36px) 16px 16px; }
-.qp { width: min(600px, 100%); background: var(--bg-deep); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 8px 28px rgba(0, 0, 0, .36); padding: 6px; display: grid; gap: 6px; }
-.qp input { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--blue); border-radius: 2px; padding: 4px 8px; font: 13px/20px var(--ui); outline: none; }
-.qp input::placeholder { color: var(--dim); }
-.qp-list { max-height: min(60vh, 440px); overflow-y: auto; }
-.qp-item { display: flex; align-items: center; gap: 10px; height: 26px; padding: 0 10px; border-radius: 3px; cursor: pointer; font-size: 13px; white-space: nowrap; }
-.qp-item.sep { border-top: 1px solid var(--line); border-radius: 0 0 3px 3px; margin-top: 4px; }
-.qp-item.act { background: var(--bg-sel); color: var(--fg-bright); }
-.qp-dots { display: inline-flex; flex: none; border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px var(--line); }
-.qp-dots i { width: 9px; height: 14px; }
-.qp-name { overflow: hidden; text-overflow: ellipsis; }
-.qp-cur { color: var(--dim); font-size: 12px; }
-.qp-grp { margin-left: auto; color: var(--muted); font-size: 11px; }
-.qp-empty { padding: 6px 10px; color: var(--muted); }
-
-/* github view */
-.gh { font-family: var(--ui); padding: 28px clamp(16px, 4vw, 40px) 40px; max-width: 900px; display: grid; gap: 18px; }
-.gh-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
-.gh-head h2 { margin: 0; font: 600 20px/1.2 var(--mono); color: var(--fg-bright); }
-.gh-head a { font: 13px var(--mono); text-decoration: none; }
-.gh-head a:hover { text-decoration: underline; }
-.gh-total { font: 14px var(--mono); color: var(--fg); }
-.gh-total b { color: var(--green); font-weight: 700; }
-.gh-scroll { overflow-x: auto; padding-bottom: 6px; }
-.gh-graph { display: grid; grid-template-columns: 30px max-content; grid-template-rows: 16px auto; column-gap: 6px; width: max-content; font: 10px/1 var(--mono); color: var(--muted); }
-.gh-months { grid-column: 2; display: grid; grid-auto-columns: 11px; column-gap: 3px; }
-.gh-months span { grid-row: 1; white-space: nowrap; }
-.gh-days { display: grid; grid-template-rows: repeat(7, 11px); row-gap: 3px; align-items: center; }
-.gh-cells { display: grid; grid-template-rows: repeat(7, 11px); grid-auto-flow: column; grid-auto-columns: 11px; gap: 3px; }
-.gh-cells i { border-radius: 2px; background: var(--gh0); }
-.gh-cells i.l1 { background: var(--gh1); } .gh-cells i.l2 { background: var(--gh2); } .gh-cells i.l3 { background: var(--gh3); } .gh-cells i.l4 { background: var(--gh4); }
-.gh-cells i.pad { background: transparent; }
-.gh-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font: 11px var(--mono); color: var(--muted); }
-.gh-legend .sw { display: inline-flex; gap: 3px; vertical-align: middle; margin: 0 4px; }
-.gh-legend .sw i { width: 11px; height: 11px; border-radius: 2px; }
-.gh-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px 24px; margin: 6px 0 0; padding-top: 16px; border-top: 1px solid var(--line); }
-.gh-stats div { display: grid; gap: 2px; }
-.gh-stats dt { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
-.gh-stats dd { margin: 0; font: 15px var(--mono); color: var(--fg-bright); font-variant-numeric: tabular-nums; }
-.gh-hint { font: 12px var(--mono); color: var(--dim); }
-.gh-hint code { color: var(--green); }
-
-/* sash + panel */
-.sash { cursor: row-resize; border-top: 1px solid var(--line); touch-action: none; }
-.sash:hover, .sash.drag { background: var(--blue); opacity: .5; }
-.panel { display: grid; grid-template-rows: 32px minmax(0, 1fr); min-height: 0; }
-.panel-head { display: flex; align-items: center; gap: 18px; padding: 0 14px 0 20px; font-size: 11px; letter-spacing: .04em; color: var(--muted); }
-.panel-head .on { color: var(--fg-bright); position: relative; padding-block: 6px; }
-.panel-head .on::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--fg); }
-.panel-head .right { margin-left: auto; letter-spacing: 0; font-size: 12px; display: flex; align-items: center; gap: 6px; }
-.term { overflow-y: auto; overflow-x: hidden; padding: 4px 20px 16px; font: var(--code-size)/var(--code-lh) var(--mono); cursor: text; }
-#tout { white-space: pre-wrap; word-break: break-word; }
-#tout a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
-.tin { display: flex; align-items: baseline; white-space: pre; }
-.tin #ps { white-space: pre-wrap; }
-.tin input { flex: 1; min-width: 2ch; background: transparent; border: 0; outline: none; color: var(--fg); font: inherit; padding: 0; margin: 0; caret-color: var(--fg); }
-.measure { position: absolute; visibility: hidden; white-space: pre; font: var(--code-size) var(--mono); }
-.a-b { font-weight: 700; } .a-i { font-style: italic; } .a-u { text-decoration: underline; }
-
-/* status bar */
-.status { display: flex; align-items: center; gap: 2px; padding: 0 6px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; }
-.status .it { display: inline-flex; align-items: center; gap: 4px; padding: 0 6px; height: 22px; }
-.status button.it:hover, .status a.it:hover { background: var(--bg-hover); color: var(--fg); }
-.status a.it { color: inherit; text-decoration: none; }
-.status svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.4; }
-.status .sp { flex: 1; }
-.status .gh-dot { width: 8px; height: 8px; border-radius: 2px; background: var(--gh4); }
-
-@media (max-width: 760px) {
-  .main { grid-template-columns: minmax(0, 1fr); }
-  .activity, .sidebar { display: none; }
-  .work { grid-template-rows: 35px 0 minmax(0, 1fr) 5px 58%; }
-  .crumbs { visibility: hidden; }
-  .term { padding-inline: 12px; }
-  .code .ln { padding: 0 10px 0 8px; }
-  .status .wide { display: none; }
+/* ================================================================ */
+/* GitHub contributions                                             */
+/* ================================================================ */
+const contribCache = new Map();
+async function loadContrib(user) {
+  if (contribCache.has(user)) return contribCache.get(user);
+  const p = (async () => {
+    try {
+      const r = await fetch(`https://github-contributions-api.jogruber.de/v4/${encodeURIComponent(user)}?y=last`);
+      if (r.ok) {
+        const j = await r.json();
+        if (j && Array.isArray(j.contributions) && j.contributions.length) {
+          const d = new Date();
+          return { user, contributions: j.contributions, live: true, fetched: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` };
+        }
+      }
+    } catch (e) { /* offline or blocked: fall through to the snapshot */ }
+    if (user !== GH_USER) throw new Error('unreachable');
+    const r = await fetch('data/contrib.json');
+    const j = await r.json();
+    return { user, contributions: j.contributions, live: false, fetched: j.fetched };
+  })();
+  contribCache.set(user, p);
+  p.catch(() => contribCache.delete(user));
+  return p;
 }
-@media (pointer: coarse) { .tin input { font-size: 16px; } }
-@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
-</style>
 
-<div class="win">
-  <header class="titlebar"><span class="who"><b>MK</b></span><span id="wtitle">matt</span></header>
-  <div class="main">
-    <nav class="activity" aria-label="Views">
-      <button class="act on" id="act-files" title="Explorer" aria-label="Explorer"><svg viewBox="0 0 24 24"><path d="M14 3H7.5A1.5 1.5 0 0 0 6 4.5v12A1.5 1.5 0 0 0 7.5 18h9a1.5 1.5 0 0 0 1.5-1.5V7z"/><path d="M14 3v4h4"/><path d="M6 7H4.5A1.5 1.5 0 0 0 3 8.5v11A1.5 1.5 0 0 0 4.5 21H13a1.5 1.5 0 0 0 1.5-1.5V18"/></svg></button>
-      <button class="act" id="act-gh" title="GitHub contributions" aria-label="GitHub contributions"><svg viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 7v10"/><path d="M18 10c0 4-6 3-11.5 7.5"/></svg></button>
-      <a class="act" href="blog.html" id="act-blog" title="Blog" aria-label="Blog"><svg viewBox="0 0 24 24"><path d="M5 3.5h9l5 5V20a.5.5 0 0 1-.5.5h-13A.5.5 0 0 1 5 20z"/><path d="M14 3.5V8a.5.5 0 0 0 .5.5H19"/><path d="M8.5 13h7M8.5 16.5h7M8.5 9.5h2.5"/></svg></a>
-      <a class="act" href="https://github.com/mattkoco" target="_blank" rel="noopener" title="github.com/mattkoco" aria-label="GitHub profile"><svg viewBox="0 0 24 24"><path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a>
-      <a class="act" href="https://linkedin.com/in/matthew-kocorowski" target="_blank" rel="noopener" title="LinkedIn" aria-label="LinkedIn profile"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 0 1 4 0v4M12 10v7"/></svg></a>
-      <span class="spacer"></span>
-      <button class="act" id="act-theme" title="Color Theme" aria-label="Color Theme"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.6-.8 1.6-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.6 1.7-1.6H16a5 5 0 0 0 5-5C21 6.4 17 3 12 3z"/><circle cx="7.5" cy="11.5" r="1"/><circle cx="10" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/></svg></button>
-    </nav>
-    <aside class="sidebar" aria-label="Explorer">
-      <div class="side-head">EXPLORER</div>
-      <div class="side-sec"><span class="chev"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg></span>MATT</div>
-      <div class="tree" id="tree" role="tree"></div>
-    </aside>
-    <section class="work" id="work">
-      <div class="tabs" id="tabs" role="tablist"></div>
-      <div class="crumbs" id="crumbs"></div>
-      <div class="editor" id="editor" tabindex="-1"></div>
-      <div class="sash" id="sash" role="separator" aria-orientation="horizontal" aria-label="Resize terminal"></div>
-      <div class="panel">
-        <div class="panel-head"><span class="on">TERMINAL</span><span class="right"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3 4l4 4-4 4M8 12h5"/></svg>bash</span></div>
-        <div class="term" id="term">
-          <div id="tout" aria-live="polite"></div>
-          <div class="tin" id="tin"><span id="ps"></span><input id="cmd" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Terminal input"></div>
-          <span class="measure" id="measure">MMMMMMMMMM</span>
-        </div>
+function contribStats(days) {
+  const total = days.reduce((t, d) => t + d.count, 0);
+  let longest = 0, run = 0, busiest = days[0];
+  for (const d of days) {
+    run = d.count ? run + 1 : 0;
+    longest = Math.max(longest, run);
+    if (d.count > busiest.count) busiest = d;
+  }
+  let current = 0;
+  for (let k = days.length - 1; k >= 0; k--) {
+    if (days[k].count) current++;
+    else if (k === days.length - 1) continue; // today may not have activity yet
+    else break;
+  }
+  return { total, longest, current, busiest, active: days.filter(d => d.count).length };
+}
+const fmtDay = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+function renderContrib(el, data) {
+  const days = data.contributions;
+  const s = contribStats(days);
+  const offset = new Date(days[0].date + 'T00:00:00').getDay();
+  const cells = [];
+  for (let k = 0; k < offset; k++) cells.push('<i class="pad"></i>');
+  for (const d of days) cells.push(`<i class="l${d.level}" title="${d.count || 'No'} contribution${d.count === 1 ? '' : 's'} on ${fmtDay(d.date)}"></i>`);
+  const months = [];
+  let lastMonth = -1, lastCol = -9;
+  days.forEach((d, k) => {
+    const dt = new Date(d.date + 'T00:00:00');
+    const col = Math.floor((k + offset) / 7);
+    if (dt.getMonth() !== lastMonth && dt.getDate() <= 7 && col - lastCol >= 3) {
+      months.push(`<span style="grid-column:${col + 1}">${dt.toLocaleDateString('en-US', { month: 'short' })}</span>`);
+      lastCol = col;
+    }
+    lastMonth = dt.getMonth();
+  });
+  el.innerHTML = `
+  <div class="gh">
+    <div class="gh-head"><h2>${esc(data.user)}</h2><a href="https://github.com/${esc(data.user)}" target="_blank" rel="noopener">github.com/${esc(data.user)} ↗</a></div>
+    <div class="gh-total"><b>${s.total}</b> contributions in the last year</div>
+    <div class="gh-scroll">
+      <div class="gh-graph">
+        <div class="gh-months">${months.join('')}</div>
+        <div class="gh-days"><span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span></div>
+        <div class="gh-cells">${cells.join('')}</div>
       </div>
-    </section>
-  </div>
-  <footer class="status">
-    <span class="it"><svg viewBox="0 0 16 16"><circle cx="4.5" cy="3.5" r="1.5"/><circle cx="4.5" cy="12.5" r="1.5"/><circle cx="11.5" cy="5.5" r="1.5"/><path d="M4.5 5v6M11.5 7c0 2.5-4 2-6.5 4.5"/></svg>main</span>
-    <span class="it wide"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M6 6l4 4M10 6l-4 4"/></svg>0 <svg viewBox="0 0 16 16"><path d="M8 2.5l6 11H2z"/><path d="M8 7v3M8 11.8v.2"/></svg>0</span>
-    <button class="it" id="st-gh" title="Open GitHub contributions"><span class="gh-dot"></span><span id="st-gh-text">GitHub</span></button>
-    <span class="sp"></span>
-    <span class="it wide" id="st-pos">Ln 1, Col 1</span>
-    <span class="it wide">UTF-8</span>
-    <span class="it wide">LF</span>
-    <span class="it wide" id="st-lang">Markdown</span>
-    <button class="it" id="st-theme" title="Select Color Theme"><svg viewBox="0 0 16 16"><path d="M8 2a6 6 0 1 0 0 12c.7 0 1-.5 1-1.1 0-.7-.6-1-.6-1.6 0-.6.5-1.1 1.1-1.1h1.2A3.3 3.3 0 0 0 14 6.9C14 4.2 11.3 2 8 2z"/></svg><span id="st-theme-text">Gruvbox Material</span></button>
-  </footer>
-</div>
+    </div>
+    <div class="gh-legend"><span>Less<span class="sw"><i style="background:var(--gh0)"></i><i style="background:var(--gh1)"></i><i style="background:var(--gh2)"></i><i style="background:var(--gh3)"></i><i style="background:var(--gh4)"></i></span>More</span>
+      <span>${data.live ? 'live from GitHub' : `snapshot from ${esc(data.fetched)}; live data loads when the site is hosted`}</span></div>
+    <dl class="gh-stats">
+      <div><dt>Active days</dt><dd>${s.active} / ${days.length}</dd></div>
+      <div><dt>Busiest day</dt><dd>${s.busiest.count} · ${new Date(s.busiest.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</dd></div>
+      <div><dt>Longest streak</dt><dd>${s.longest} day${s.longest === 1 ? '' : 's'}</dd></div>
+      <div><dt>Current streak</dt><dd>${s.current} day${s.current === 1 ? '' : 's'}</dd></div>
+    </dl>
+    <div class="gh-hint">in the terminal: <code>contrib</code> or <code>ghcontrib &lt;user&gt;</code></div>
+  </div>`;
+}
 
-<div class="qp-wrap" id="qp" hidden>
-  <div class="qp" role="dialog" aria-label="Select Color Theme">
-    <input id="qp-in" role="combobox" aria-controls="qp-list" aria-expanded="true" autocomplete="off" spellcheck="false" placeholder="Select Color Theme (Up/Down Keys to Preview)">
-    <div class="qp-list" id="qp-list" role="listbox"></div>
-  </div>
-</div>
+/* ================================================================ */
+/* syntax highlighting for the editor                               */
+/* ================================================================ */
+const RULES = {
+  md: [
+    [/\[([^\]]+)\]\(([^)\s]+)\)/, 'u', m => mdLink(m[1], m[2])],
+    [/^#{1,6}\s.*$/, 'h'], [/^[=-]{3,}$/, 'h'], [/^ {4}.*$/, 's'], [/^\s*(?:[-*]|\d+\.)(?=\s)/, 'm'],
+    [/`[^`]+`/, 's'], [/\*\*[^*]+\*\*/, 'b'], [/https?:\/\/[^\s)]+/, 'u'], [/[\w.+-]+@[\w-]+\.[\w.]+/, 'v'],
+  ],
+  sh: [
+    [/(?:^|(?<=\s))#.*$/, 'c'], [/'[^']*'|"(?:[^"\\]|\\.)*"/, 's'], [/\$\{[^}]*\}|\$\w+|\$[?@#$*]/, 'n'],
+    [/\b(?:if|then|elif|else|fi|for|in|do|done|while|until|function|return|local|export|alias|case|esac)\b/, 'k'],
+    [/^\s*[A-Za-z_]\w*(?==)/, 'v'], [/\b\d+\b/, 'n'],
+  ],
+  json: [[/"(?:[^"\\]|\\.)*"(?=\s*:)/, 'key'], [/"(?:[^"\\]|\\.)*"/, 's'], [/-?\b\d+(?:\.\d+)?\b/, 'n'], [/\b(?:true|false|null)\b/, 'o']],
+  txt: [[/https?:\/\/[^\s)]+/, 'u'], [/[\w.+-]+@[\w-]+\.[\w.]+/, 'v'], [/^[=-]{3,}$/, 'h'], [/^\S.*:$/, 'o'], [/^[a-z]+:(?=\s)/, 'key']],
+};
+const LANG_NAME = { md: 'Markdown', sh: 'Shell Script', json: 'JSON', txt: 'Plain Text' };
+function langOf(path, text) {
+  if (/\.md$/i.test(path)) return 'md';
+  if (/\.json$/i.test(path)) return 'json';
+  if (/\.(sh|bash)$|\/\.(bashrc|profile|bash_profile)$/.test(path) || /^#!.*\b(ba)?sh\b/.test(text)) return 'sh';
+  return 'txt';
+}
+/* [text](url): show the text as a link. Site-relative links (blog.html#...)
+   open in this tab; anything with a scheme opens in a new one. */
+function mdLink(text, url) {
+  const ext = /^[a-z][a-z0-9+.-]*:/i.test(url);
+  return `<a class="u" href="${esc(url)}"${ext ? ' target="_blank" rel="noopener"' : ''}>${esc(text)}</a>`;
+}
+function highlightLine(line, rules) {
+  let out = '', pos = 0;
+  while (pos <= line.length) {
+    let best = null;
+    for (const [re, cls, render] of rules) {
+      const r = new RegExp(re.source, 'g' + (re.flags.replace('g', '')));
+      r.lastIndex = pos;
+      const m = r.exec(line);
+      if (m && m[0] && (!best || m.index < best.index)) best = { index: m.index, m, cls, render };
+    }
+    if (!best) { out += esc(line.slice(pos)); break; }
+    out += esc(line.slice(pos, best.index));
+    const text = best.m[0];
+    if (best.render) out += best.render(best.m);
+    else {
+      const t = esc(text);
+      out += best.cls === 'u' ? `<a class="u" href="${t}" target="_blank" rel="noopener">${t}</a>` : `<span class="${best.cls}">${t}</span>`;
+    }
+    pos = best.index + text.length;
+  }
+  return out;
+}
+const fileIcon = (name, n) => {
+  if (n.bin || /^#!/.test(n.content || '') || n.mode & 0o111) return ['$', 'sh'];
+  if (/\.md$/.test(name)) return ['M', 'md'];
+  if (/\.json$/.test(name)) return ['{}', 'json'];
+  if (name[0] === '.') return ['⚙', 'cfg'];
+  return ['≡', 'txt'];
+};
 
-<script src="themes.js"></script>
-<script src="shell.js"></script>
-<script src="app.js"></script>
-</body>
-</html>
+/* ================================================================ */
+/* app                                                              */
+/* ================================================================ */
+let fs, sh;
+const ui = {
+  expanded: new Set([HOME, HOME + '/experience', HOME + '/projects']),
+  tabs: [], active: null,
+};
+
+/* ---------------------------- explorer --------------------------- */
+const CHEV = open => `<span class="chev"><svg viewBox="0 0 16 16"><path d="${open ? 'M4 6l4 4 4-4' : 'M6 4l4 4-4 4'}"/></svg></span>`;
+function renderTree() {
+  const root = fs.get(HOME);
+  const rows = [];
+  const walk = (dir, path, depth) => {
+    const ents = [...dir.children].filter(([k]) => k[0] !== '.')
+      .sort((a, b) => (a[1].type === 'dir') !== (b[1].type === 'dir') ? (a[1].type === 'dir' ? -1 : 1) : a[0].toLowerCase() < b[0].toLowerCase() ? -1 : 1);
+    for (const [k, n] of ents) {
+      const p = path + '/' + k;
+      const pad = `padding-left:${8 + depth * 12}px`;
+      if (n.type === 'dir') {
+        const open = ui.expanded.has(p);
+        rows.push(`<button class="ti" role="treeitem" aria-expanded="${open}" data-dir="${esc(p)}" style="${pad}">${CHEV(open)}<span class="nm">${esc(k)}</span></button>`);
+        if (open && fs.can(n, 5)) walk(n, p, depth + 1);
+      } else {
+        const [g, cls] = fileIcon(k, n);
+        rows.push(`<button class="ti${ui.active === p ? ' sel' : ''}" role="treeitem" data-file="${esc(p)}" style="${pad}"><span class="chev"></span><span class="ic ${cls}">${g}</span><span class="nm">${esc(k)}</span></button>`);
+      }
+    }
+  };
+  if (root) walk(root, HOME, 0);
+  $('tree').innerHTML = rows.join('');
+}
+$('tree').addEventListener('click', e => {
+  const b = e.target.closest('.ti');
+  if (!b) return;
+  if (b.dataset.dir) { const p = b.dataset.dir; ui.expanded.has(p) ? ui.expanded.delete(p) : ui.expanded.add(p); renderTree(); }
+  else openFile(b.dataset.file);
+});
+
+/* ----------------------------- editor ---------------------------- */
+function tabTitle(id) { return id === 'gh' ? 'contributions' : id.slice(id.lastIndexOf('/') + 1); }
+async function openFile(path) {
+  if (!ui.tabs.includes(path)) ui.tabs.push(path);
+  ui.active = path;
+  await renderEditor();
+}
+async function openGh() {
+  if (!ui.tabs.includes('gh')) ui.tabs.push('gh');
+  ui.active = 'gh';
+  await renderEditor();
+}
+function closeTab(id) {
+  const k = ui.tabs.indexOf(id);
+  ui.tabs.splice(k, 1);
+  if (ui.active === id) ui.active = ui.tabs[Math.min(k, ui.tabs.length - 1)] || null;
+  renderEditor();
+}
+function renderTabs() {
+  $('tabs').innerHTML = ui.tabs.map(id => {
+    const gone = id !== 'gh' && !fs.get(id);
+    const icon = id === 'gh' ? '<span class="ic sh" style="color:var(--green)">■</span>' : (() => { const n = fs.get(id); const [g, c] = n ? fileIcon(tabTitle(id), n) : ['≡', 'txt']; return `<span class="ic ${c}">${g}</span>`; })();
+    return `<div class="tab${ui.active === id ? ' on' : ''}${gone ? ' gone' : ''}" role="tab" aria-selected="${ui.active === id}" data-id="${esc(id)}" tabindex="0">${icon}<span class="label">${esc(tabTitle(id))}</span><button class="x" data-close="${esc(id)}" aria-label="Close ${esc(tabTitle(id))}">×</button></div>`;
+  }).join('');
+}
+$('tabs').addEventListener('click', e => {
+  const x = e.target.closest('[data-close]');
+  if (x) { e.stopPropagation(); closeTab(x.dataset.close); return; }
+  const t = e.target.closest('.tab');
+  if (t) { ui.active = t.dataset.id; renderEditor(); }
+});
+$('tabs').addEventListener('keydown', e => {
+  const t = e.target.closest('.tab');
+  if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); ui.active = t.dataset.id; renderEditor(); }
+});
+let renderSeq = 0;
+async function renderEditor() {
+  const seq = ++renderSeq;
+  renderTabs();
+  renderTree();
+  const ed = $('editor');
+  const id = ui.active;
+  $('wtitle').textContent = id ? `${tabTitle(id)} - matt` : 'matt';
+  if (!id) { ed.innerHTML = '<div class="note">No editor open. Try <code>code about.txt</code> in the terminal.</div>'; $('crumbs').innerHTML = ''; return; }
+  if (id === 'gh') {
+    $('crumbs').innerHTML = '<span>github</span><span class="sep">›</span><span>' + GH_USER + '</span>';
+    $('st-lang').textContent = 'GitHub';
+    try { const d = await loadContrib(GH_USER); if (seq === renderSeq) renderContrib(ed, d); }
+    catch (e) { if (seq === renderSeq) ed.innerHTML = '<div class="note">Couldn\'t load contribution data.</div>'; }
+    return;
+  }
+  const rel = id.startsWith(HOME + '/') ? id.slice(HOME.length + 1) : id;
+  $('crumbs').innerHTML = rel.split('/').map(esc).join('<span class="sep">›</span>');
+  const n = fs.get(id);
+  if (!n) { ed.innerHTML = '<div class="note">This file was deleted from the shell. Reload the page to restore it.</div>'; return; }
+  if (n.bin) { ed.innerHTML = '<div class="note">The file is not displayed in the text editor because it is either binary or uses an unsupported text encoding.</div>'; $('st-lang').textContent = 'Binary'; return; }
+  let text;
+  try { text = await fs.read(n); } catch (e) { text = ''; }
+  if (seq !== renderSeq) return;
+  const lang = langOf(id, text);
+  $('st-lang').textContent = LANG_NAME[lang];
+  const lines = text.replace(/\n$/, '').split('\n');
+  ed.innerHTML = `<div class="code">${lines.map((l, k) => `<div class="ln">${k + 1}</div><div class="lc">${highlightLine(l, RULES[lang]) || ' '}</div>`).join('')}</div>`;
+  ed.scrollTop = 0;
+}
+
+/* ---------------------------- terminal --------------------------- */
+const term = {
+  out: $('tout'), row: $('tin'), ps: $('ps'), input: $('cmd'), box: $('term'),
+  st: {}, running: false, intr: false, reading: null, buffer: '', hist: [], hpos: 0, draft: '', ended: false,
+  write(s) { this.out.append(renderAnsi(s, this.st)); this.scroll(); },
+  scroll() { this.box.scrollTop = this.box.scrollHeight; },
+  setPrompt(p) { this.ps.textContent = ''; this.ps.append(renderAnsi(p, {})); this.promptText = p; },
+  show(on) { this.row.hidden = !on; if (on) { this.scroll(); focusTerm(); } },
+  clear() { this.out.textContent = ''; },
+  cols() {
+    const cw = $('measure').getBoundingClientRect().width / 10 || 8;
+    const w = this.box.clientWidth - parseFloat(getComputedStyle(this.box).paddingLeft) - parseFloat(getComputedStyle(this.box).paddingRight);
+    return Math.max(20, Math.floor(w / cw) - 1);
+  },
+  readLine(prompt, opts = {}) {
+    return new Promise((resolve, reject) => {
+      this.reading = { resolve, reject, secret: !!opts.secret, prompt };
+      this.setPrompt(prompt);
+      this.input.type = opts.secret ? 'password' : 'text';
+      this.show(true);
+    });
+  },
+};
+function focusTerm() {
+  const sel = window.getSelection();
+  if (sel && String(sel).length) return;
+  if (document.activeElement && document.activeElement.closest && document.activeElement.closest('.tabs, .tree')) return;
+  term.input.focus({ preventScroll: true });
+}
+const env = {
+  write: s => term.write(s),
+  clear: () => term.clear(),
+  cols: () => term.cols(),
+  readLine: (p, o) => term.readLine(p, o),
+  interrupted: () => term.intr,
+  openFile: p => openFile(p),
+  revealDir: p => { let q = p; while (q.startsWith(HOME)) { ui.expanded.add(q); q = q.slice(0, q.lastIndexOf('/')); } renderTree(); },
+  contrib: u => loadContrib(u),
+  themes: window.Themes,
+  contribColors: () => window.Themes.ramp(),
+  goBlog: () => { location.href = 'blog.html'; },
+};
+const ioTerm = { in: null, out: s => term.write(s), err: s => term.write(s), tty: true };
+
+function echoLine(text) { term.write(term.promptText + text + '\n'); }
+
+async function boot() {
+  term.clear();
+  term.ended = false;
+  sh = new Shell(fs, env);
+  sh.history = term.hist;
+  term.running = true; term.show(false);
+  await sh.runInteractive('cat /etc/motd 2>/dev/null; echo; source ~/.bashrc', ioTerm);
+  term.running = false;
+  term.setPrompt(sh.prompt('PS1'));
+  term.show(true);
+}
+
+function historyExpand(src) {
+  if (!/!(!|-?\d+)/.test(src)) return src;
+  let changed = false;
+  const out = src.replace(/!(!|-?\d+)/g, (m, x) => {
+    const h = term.hist;
+    const v = x === '!' ? h[h.length - 1] : +x < 0 ? h[h.length + +x] : h[+x - 1];
+    if (v == null) throw new Error(`bash: ${m}: event not found`);
+    changed = true; return v;
+  });
+  if (changed) term.write(out + '\n');
+  return out;
+}
+
+async function submit() {
+  const line = term.input.value;
+  term.input.value = '';
+  if (term.reading) {
+    const r = term.reading; term.reading = null;
+    term.input.type = 'text';
+    term.write(r.prompt + (r.secret ? '' : line) + '\n');
+    term.show(false);
+    r.resolve(line);
+    return;
+  }
+  if (term.ended) { boot(); return; }
+  echoLine(line);
+  let src = term.buffer ? term.buffer + '\n' + line : line;
+  try { src = historyExpand(src); } catch (e) { term.write(e.message + '\n'); term.buffer = ''; term.setPrompt(sh.prompt('PS1')); return; }
+  try { parse(src); }
+  catch (e) {
+    if (e instanceof Incomplete) { term.buffer = src; term.setPrompt(sh.prompt('PS2')); return; }
+  }
+  term.buffer = '';
+  if (src.trim()) {
+    if (term.hist[term.hist.length - 1] !== src) term.hist.push(src);
+    term.hpos = term.hist.length;
+    term.running = true; term.intr = false; term.show(false);
+    try { await sh.runInteractive(src, ioTerm); }
+    catch (e) {
+      if (e instanceof ExitSig) {
+        term.running = false;
+        term.write('logout\n\nSession ended. Press Enter to start a new one.\n');
+        term.ended = true; term.setPrompt(''); term.show(true);
+        return;
+      }
+      term.write(`bash: ${e && e.message}\n`);
+    }
+    term.running = false;
+  }
+  term.intr = false;
+  term.setPrompt(sh.prompt('PS1'));
+  term.show(true);
+}
+
+function interrupt() {
+  if (term.reading) {
+    const r = term.reading; term.reading = null;
+    term.input.type = 'text';
+    term.write(r.prompt + term.input.value + '^C\n');
+    term.input.value = '';
+    term.intr = true;
+    term.show(false);
+    r.reject(new Interrupt());
+    return;
+  }
+  if (term.running) { term.write('^C\n'); term.intr = true; return; }
+  echoLine(term.input.value + '^C');
+  term.input.value = ''; term.buffer = '';
+  term.setPrompt(sh.prompt('PS1'));
+}
+
+term.input.addEventListener('keydown', e => {
+  const k = e.key;
+  if (k === 'Enter') { e.preventDefault(); submit(); return; }
+  if (e.ctrlKey && (k === 'c' || k === 'C') && !String(window.getSelection())) { e.preventDefault(); interrupt(); return; }
+  if (e.ctrlKey && (k === 'l' || k === 'L')) { e.preventDefault(); term.clear(); return; }
+  if (e.ctrlKey && (k === 'd' || k === 'D')) {
+    if (!term.input.value) {
+      e.preventDefault();
+      if (term.reading) { const r = term.reading; term.reading = null; term.write(r.prompt + '\n'); term.show(false); r.resolve(null); }
+      else if (!term.running && !term.ended) { term.input.value = 'exit'; submit(); }
+    }
+    return;
+  }
+  if (e.ctrlKey && (k === 'u' || k === 'U')) { e.preventDefault(); term.input.value = term.input.value.slice(term.input.selectionStart); term.input.setSelectionRange(0, 0); return; }
+  if (term.reading) return;
+  if (k === 'Tab') {
+    e.preventDefault();
+    if (!sh) return;
+    const pos = term.input.selectionStart;
+    const head = term.input.value.slice(0, pos), tail = term.input.value.slice(pos);
+    const r = sh.complete(head);
+    if (r.list.length) {
+      echoLine(term.input.value);
+      const w = Math.max(...r.list.map(s => s.length)) + 2;
+      const per = Math.max(1, Math.floor(term.cols() / w));
+      let s = '';
+      r.list.forEach((x, i) => { s += (i % per === per - 1 || i === r.list.length - 1) ? x + '\n' : x.padEnd(w); });
+      term.write(s);
+    }
+    term.input.value = r.line + tail;
+    term.input.setSelectionRange(r.line.length, r.line.length);
+    return;
+  }
+  if (k === 'ArrowUp' || k === 'ArrowDown') {
+    e.preventDefault();
+    if (term.hpos === term.hist.length) term.draft = term.input.value;
+    term.hpos = Math.max(0, Math.min(term.hist.length, term.hpos + (k === 'ArrowUp' ? -1 : 1)));
+    term.input.value = term.hpos === term.hist.length ? term.draft : term.hist[term.hpos];
+    const L = term.input.value.length;
+    requestAnimationFrame(() => term.input.setSelectionRange(L, L));
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && (e.key === 'c' || e.key === 'C') && term.running && !term.reading && !String(window.getSelection())) { e.preventDefault(); interrupt(); }
+});
+term.box.addEventListener('mouseup', () => focusTerm());
+term.box.addEventListener('click', e => { if (!e.target.closest('a')) focusTerm(); });
+
+/* ------------------------------ sash ----------------------------- */
+(() => {
+  const sash = $('sash'), work = $('work');
+  let drag = false;
+  const KEY = 'mk.panelPx';
+  const apply = px => {
+    const mobile = matchMedia('(max-width: 760px)').matches;
+    work.style.gridTemplateRows = `35px ${mobile ? 0 : 22}px minmax(0, 1fr) 5px ${px}px`;
+  };
+  try { const v = +localStorage.getItem(KEY); if (v > 60) apply(v); } catch (e) {}
+  sash.addEventListener('pointerdown', e => { drag = true; sash.classList.add('drag'); sash.setPointerCapture(e.pointerId); });
+  sash.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const r = work.getBoundingClientRect();
+    const px = Math.round(Math.max(90, Math.min(r.height - 120, r.bottom - e.clientY)));
+    apply(px);
+    try { localStorage.setItem(KEY, String(px)); } catch (err) {}
+  });
+  const end = () => { drag = false; sash.classList.remove('drag'); term.scroll(); };
+  sash.addEventListener('pointerup', end);
+  sash.addEventListener('pointercancel', end);
+})();
+
+/* ---------------------------- wiring ----------------------------- */
+$('act-gh').addEventListener('click', openGh);
+$('st-gh').addEventListener('click', openGh);
+$('act-files').addEventListener('click', () => openFile(HOME + '/README.md'));
+$('act-theme').addEventListener('click', () => window.Themes.pick());
+$('st-theme').addEventListener('click', () => window.Themes.pick());
+
+/* favicon: an "MK" monogram drawn as an SVG, recolored to the active theme.
+   Rebuilt whenever the theme changes. */
+function updateFavicon() {
+  const cs = getComputedStyle(document.documentElement);
+  const accent = (cs.getPropertyValue('--orange').trim()) || '#e78a4e';
+  const bg = (cs.getPropertyValue('--bg').trim()) || '#292828';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">`
+    + `<circle cx="16" cy="16" r="16" fill="${accent}"/>`
+    + `<text x="16" y="16" text-anchor="middle" dominant-baseline="central" `
+    + `font-family="Consolas,Menlo,monospace" font-size="20" font-weight="700" fill="${bg}">M</text>`
+    + `</svg>`;
+  let link = document.querySelector('link[rel="icon"]');
+  if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+  link.type = 'image/svg+xml';
+  link.href = 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+if (window.Themes && window.Themes.onChange) window.Themes.onChange(updateFavicon);
+updateFavicon();
+
+let fsTimer = null;
+function onFsChange() {
+  clearTimeout(fsTimer);
+  fsTimer = setTimeout(() => {
+    renderTree();
+    if (ui.active && ui.active !== 'gh') renderEditor(); else renderTabs();
+  }, 30);
+}
+
+(async function start() {
+  try {
+    fs = await buildFS('fs.json', 'fs/');
+  } catch (e) {
+    term.write('\x1b[31mCould not load the filesystem (fs.json).\x1b[0m\nIf you opened index.html straight from disk, serve the folder instead:\n  python3 -m http.server\n');
+    return;
+  }
+  fs.listeners.push(onFsChange);
+  ui.tabs = [HOME + '/README.md', 'gh'];
+  ui.active = HOME + '/README.md';
+  renderEditor();
+  loadContrib(GH_USER).then(d => {
+    const total = d.contributions.reduce((t, x) => t + x.count, 0);
+    $('st-gh-text').textContent = `${GH_USER} · ${total} contributions`;
+  }).catch(() => {});
+  await boot();
+})();
+})();
