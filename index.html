@@ -13,6 +13,7 @@
 :root {
   --syn-kw: #ea6962; --syn-str: #a9b665; --syn-var: #7daea3; --syn-num: #d3869b; --syn-com: #928374; --syn-head: #e78a4e;
   --syn-bold: #d8a657; --syn-mark: #ea6962; --syn-link: #7daea3; --syn-key: #89b482; --syn-con: #e78a4e;
+  --accent: #e78a4e;
   color-scheme: dark;
   --bg: #292828;
   --bg-deep: #242322;
@@ -50,7 +51,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 /* title bar */
 .titlebar { display: grid; place-items: center; color: var(--muted); font-size: 12px; border-bottom: 1px solid var(--line); user-select: none; position: relative; }
 .titlebar .who { position: absolute; left: 12px; top: 0; bottom: 0; display: flex; align-items: center; gap: 6px; color: var(--dim); }
-.titlebar .who b { color: var(--orange); font-weight: 600; }
+.titlebar .who b { color: var(--accent); font-weight: 600; }
 
 .main { display: grid; grid-template-columns: 48px 230px minmax(0, 1fr); min-height: 0; }
 
